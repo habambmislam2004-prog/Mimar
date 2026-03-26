@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Requests\Web\Service;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateServiceWebRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'business_account_id' => ['required', 'exists:business_accounts,id'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'subcategory_id' => ['nullable', 'exists:subcategories,id'],
+            'name_ar' => ['required', 'string', 'max:255'],
+            'name_en' => ['nullable', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'business_account_id' => __('messages.attributes.business_account'),
+            'category_id' => __('messages.attributes.category'),
+            'subcategory_id' => __('messages.attributes.subcategory'),
+            'name_ar' => __('messages.attributes.name_ar'),
+            'name_en' => __('messages.attributes.name_en'),
+            'description' => __('messages.attributes.description'),
+            'price' => __('messages.attributes.price'),
+            'images' => __('messages.attributes.images'),
+            'images.*' => __('messages.attributes.image'),
+        ];
+    }
+}
