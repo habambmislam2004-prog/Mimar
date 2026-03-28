@@ -14,8 +14,10 @@ use App\Http\Controllers\Api\Admin\CityMaterialPriceController;
 use App\Http\Controllers\Api\Admin\DynamicFieldController;
 use App\Http\Controllers\Api\Admin\EstimationTypeController;
 use App\Http\Controllers\Api\Admin\MaterialTypeController;
+use App\Http\Controllers\Api\Admin\RoleAdminController;
 use App\Http\Controllers\Api\Service\ServiceController;
 use App\Http\Controllers\Api\Admin\ServiceAdminController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\AppContent\PublicAppContentController;
 use App\Http\Controllers\Api\Chat\ChatController;
 use App\Http\Controllers\Api\DynamicField\PublicDynamicFieldController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Rating\RatingController;
 use App\Http\Controllers\Api\Report\ServiceReportController;
 use App\Http\Controllers\Api\Service\PublicServiceController;
+use App\Http\Controllers\Api\Slider\SliderController;
 
 Route::prefix('v1')->group(function () {
 
@@ -400,4 +403,72 @@ Route::prefix('v1')->group(function () {
 
   Route::get('/services', [PublicServiceController::class, 'index']);
   Route::get('/services/{serviceId}', [PublicServiceController::class, 'show']);
+
+  /*
+|--------------------------------------------------------------------------
+| Sliders - Public
+|--------------------------------------------------------------------------
+*/
+Route::get('/sliders', [SliderController::class, 'index']);
+Route::get('/sliders/active', [SliderController::class, 'active']);
+Route::get('/sliders/{slider}', [SliderController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| Sliders - Admin
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/sliders')->group(function () {
+    Route::middleware(['auth:sanctum', 'permission:create-sliders'])
+        ->post('/', [SliderController::class, 'store']);
+
+    Route::middleware(['auth:sanctum', 'permission:edit-sliders'])
+        ->put('/{slider}', [SliderController::class, 'update']);
+
+    Route::middleware(['auth:sanctum', 'permission:delete-sliders'])
+        ->delete('/{slider}', [SliderController::class, 'destroy']);
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Users - Admin
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/users')->group(function () {
+    Route::middleware(['auth:sanctum', 'permission:view-users'])
+        ->get('/', [UserAdminController::class, 'index']);
+
+    Route::middleware(['auth:sanctum', 'permission:view-users'])
+        ->get('/{user}', [UserAdminController::class, 'show']);
+
+    Route::middleware(['auth:sanctum', 'permission:create-users'])
+        ->post('/', [UserAdminController::class, 'store']);
+
+    Route::middleware(['auth:sanctum', 'permission:edit-users'])
+        ->put('/{user}', [UserAdminController::class, 'update']);
+
+    Route::middleware(['auth:sanctum', 'permission:delete-users'])
+        ->delete('/{user}', [UserAdminController::class, 'destroy']);
+});/*
+|--------------------------------------------------------------------------
+| Roles - Admin
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/roles')->group(function () {
+    Route::middleware(['auth:sanctum', 'permission:view-roles'])
+        ->get('/', [RoleAdminController::class, 'index']);
+
+    Route::middleware(['auth:sanctum', 'permission:view-roles'])
+        ->get('/{role}', [RoleAdminController::class, 'show']);
+
+    Route::middleware(['auth:sanctum', 'permission:create-roles'])
+        ->post('/', [RoleAdminController::class, 'store']);
+
+    Route::middleware(['auth:sanctum', 'permission:edit-roles'])
+        ->put('/{role}', [RoleAdminController::class, 'update']);
+
+    Route::middleware(['auth:sanctum', 'permission:delete-roles'])
+        ->delete('/{role}', [RoleAdminController::class, 'destroy']);
+});
 });
