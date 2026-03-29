@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\Admin\SliderAdminController;
 use App\Http\Controllers\Web\Admin\ServiceReportAdminController;
 use App\Http\Controllers\Web\Admin\BusinessAccountAdminController as WebAdminBusinessAccountController;
 use App\Http\Controllers\Web\Admin\CategoryAdminController;
+use App\Http\Controllers\Web\Admin\DynamicFieldAdminController;
 use App\Http\Controllers\Web\Admin\ServiceAdminController as WebAdminServiceController;
 use App\Http\Controllers\Web\Admin\SubcategoryAdminController;
 use App\Http\Controllers\Web\CategoryController;
@@ -199,159 +200,185 @@ Route::middleware(['auth', 'role_or_permission:super-admin|admin'])->prefix('adm
     Route::middleware('permission:delete-roles')->group(function () {
         Route::delete('/roles/{role}', [RoleAdminController::class, 'destroy'])->name('admin.roles.destroy');
     });
-    /*
-|--------------------------------------------------------------------------
-| Categories
-|--------------------------------------------------------------------------
-*/
-Route::middleware('permission:view-categories')->group(function () {
-    Route::get('/categories', [CategoryAdminController::class, 'index'])->name('admin.categories.index');
-});
 
-Route::middleware('permission:create-categories')->group(function () {
-    Route::post('/categories', [CategoryAdminController::class, 'store'])->name('admin.categories.store');
-});
+                /*
+            |--------------------------------------------------------------------------
+            | Dynamic Fields
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-dynamic-fields')->group(function () {
+                Route::get('/dynamic-fields', [DynamicFieldAdminController::class, 'index'])
+                    ->name('admin.dynamic-fields.index');
+            });
 
-Route::middleware('permission:edit-categories')->group(function () {
-    Route::put('/categories/{category}', [CategoryAdminController::class, 'update'])->name('admin.categories.update');
-});
+            Route::middleware('permission:create-dynamic-fields')->group(function () {
+                Route::post('/dynamic-fields', [DynamicFieldAdminController::class, 'store'])
+                    ->name('admin.dynamic-fields.store');
+            });
 
-Route::middleware('permission:delete-categories')->group(function () {
-    Route::delete('/categories/{category}', [CategoryAdminController::class, 'destroy'])->name('admin.categories.destroy');
-});
+            Route::middleware('permission:edit-dynamic-fields')->group(function () {
+                Route::put('/dynamic-fields/{dynamicField}', [DynamicFieldAdminController::class, 'update'])
+                    ->name('admin.dynamic-fields.update');
+            });
 
-/*
-|--------------------------------------------------------------------------
-| Subcategories
-|--------------------------------------------------------------------------
-*/
-Route::middleware('permission:view-subcategories')->group(function () {
-    Route::get('/subcategories', [SubcategoryAdminController::class, 'index'])->name('admin.subcategories.index');
-});
-
-Route::middleware('permission:create-subcategories')->group(function () {
-    Route::post('/subcategories', [SubcategoryAdminController::class, 'store'])->name('admin.subcategories.store');
-});
-
-Route::middleware('permission:edit-subcategories')->group(function () {
-    Route::put('/subcategories/{subcategory}', [SubcategoryAdminController::class, 'update'])->name('admin.subcategories.update');
-});
-
-Route::middleware('permission:delete-subcategories')->group(function () {
-    Route::delete('/subcategories/{subcategory}', [SubcategoryAdminController::class, 'destroy'])->name('admin.subcategories.destroy');
-});
+            Route::middleware('permission:delete-dynamic-fields')->group(function () {
+                Route::delete('/dynamic-fields/{dynamicField}', [DynamicFieldAdminController::class, 'destroy'])
+                    ->name('admin.dynamic-fields.destroy');
+            });
 
     /*
-    |--------------------------------------------------------------------------
-    | Users
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-users')->group(function () {
-        Route::get('/users', [UserAdminController::class, 'index'])->name('admin.users.index');
-    });
+        |--------------------------------------------------------------------------
+        | Categories
+        |--------------------------------------------------------------------------
+        */
+        Route::middleware('permission:view-categories')->group(function () {
+            Route::get('/categories', [CategoryAdminController::class, 'index'])->name('admin.categories.index');
+        });
 
-    Route::middleware('permission:create-users')->group(function () {
-        Route::post('/users', [UserAdminController::class, 'store'])->name('admin.users.store');
-    });
+        Route::middleware('permission:create-categories')->group(function () {
+            Route::post('/categories', [CategoryAdminController::class, 'store'])->name('admin.categories.store');
+        });
 
-    Route::middleware('permission:edit-users')->group(function () {
-        Route::put('/users/{user}', [UserAdminController::class, 'update'])->name('admin.users.update');
-    });
+        Route::middleware('permission:edit-categories')->group(function () {
+            Route::put('/categories/{category}', [CategoryAdminController::class, 'update'])->name('admin.categories.update');
+        });
 
-    Route::middleware('permission:delete-users')->group(function () {
-        Route::delete('/users/{user}', [UserAdminController::class, 'destroy'])->name('admin.users.destroy');
-    });
+        Route::middleware('permission:delete-categories')->group(function () {
+            Route::delete('/categories/{category}', [CategoryAdminController::class, 'destroy'])->name('admin.categories.destroy');
+        });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cities
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-cities')->group(function () {
-        Route::get('/cities', [CityAdminController::class, 'index'])->name('admin.cities.index');
-    });
+        /*
+        |--------------------------------------------------------------------------
+        | Subcategories
+        |--------------------------------------------------------------------------
+        */
+        Route::middleware('permission:view-subcategories')->group(function () {
+            Route::get('/subcategories', [SubcategoryAdminController::class, 'index'])->name('admin.subcategories.index');
+        });
 
-    Route::middleware('permission:create-cities')->group(function () {
-        Route::post('/cities', [CityAdminController::class, 'store'])->name('admin.cities.store');
-    });
+        Route::middleware('permission:create-subcategories')->group(function () {
+            Route::post('/subcategories', [SubcategoryAdminController::class, 'store'])->name('admin.subcategories.store');
+        });
 
-    Route::middleware('permission:edit-cities')->group(function () {
-        Route::put('/cities/{city}', [CityAdminController::class, 'update'])->name('admin.cities.update');
-    });
+        Route::middleware('permission:edit-subcategories')->group(function () {
+            Route::put('/subcategories/{subcategory}', [SubcategoryAdminController::class, 'update'])->name('admin.subcategories.update');
+        });
 
-    Route::middleware('permission:delete-cities')->group(function () {
-        Route::delete('/cities/{city}', [CityAdminController::class, 'destroy'])->name('admin.cities.destroy');
-    });
+        Route::middleware('permission:delete-subcategories')->group(function () {
+            Route::delete('/subcategories/{subcategory}', [SubcategoryAdminController::class, 'destroy'])->name('admin.subcategories.destroy');
+        });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Sliders
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-sliders')->group(function () {
-        Route::get('/sliders', [SliderAdminController::class, 'index'])->name('admin.sliders.index');
-    });
+            /*
+            |--------------------------------------------------------------------------
+            | Users
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-users')->group(function () {
+                Route::get('/users', [UserAdminController::class, 'index'])->name('admin.users.index');
+            });
 
-    Route::middleware('permission:create-sliders')->group(function () {
-        Route::post('/sliders', [SliderAdminController::class, 'store'])->name('admin.sliders.store');
-    });
+            Route::middleware('permission:create-users')->group(function () {
+                Route::post('/users', [UserAdminController::class, 'store'])->name('admin.users.store');
+            });
 
-    Route::middleware('permission:edit-sliders')->group(function () {
-        Route::put('/sliders/{slider}', [SliderAdminController::class, 'update'])->name('admin.sliders.update');
-    });
+            Route::middleware('permission:edit-users')->group(function () {
+                Route::put('/users/{user}', [UserAdminController::class, 'update'])->name('admin.users.update');
+            });
 
-    Route::middleware('permission:delete-sliders')->group(function () {
-        Route::delete('/sliders/{slider}', [SliderAdminController::class, 'destroy'])->name('admin.sliders.destroy');
-    });
+            Route::middleware('permission:delete-users')->group(function () {
+                Route::delete('/users/{user}', [UserAdminController::class, 'destroy'])->name('admin.users.destroy');
+            });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Business Accounts Review
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-business-accounts')->group(function () {
-        Route::get('/business-accounts', [WebAdminBusinessAccountController::class, 'index'])->name('admin.business-accounts.index');
-    });
+            /*
+            |--------------------------------------------------------------------------
+            | Cities
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-cities')->group(function () {
+                Route::get('/cities', [CityAdminController::class, 'index'])->name('admin.cities.index');
+            });
 
-    Route::middleware('permission:approve-business-accounts')->group(function () {
-        Route::post('/business-accounts/{businessAccount}/approve', [WebAdminBusinessAccountController::class, 'approve'])->name('admin.business-accounts.approve');
-    });
+            Route::middleware('permission:create-cities')->group(function () {
+                Route::post('/cities', [CityAdminController::class, 'store'])->name('admin.cities.store');
+            });
 
-    Route::middleware('permission:reject-business-accounts')->group(function () {
-        Route::post('/business-accounts/{businessAccount}/reject', [WebAdminBusinessAccountController::class, 'reject'])->name('admin.business-accounts.reject');
-    });
+            Route::middleware('permission:edit-cities')->group(function () {
+                Route::put('/cities/{city}', [CityAdminController::class, 'update'])->name('admin.cities.update');
+            });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Services Review
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-services')->group(function () {
-        Route::get('/services', [WebAdminServiceController::class, 'index'])->name('admin.services.index');
-    });
+            Route::middleware('permission:delete-cities')->group(function () {
+                Route::delete('/cities/{city}', [CityAdminController::class, 'destroy'])->name('admin.cities.destroy');
+            });
 
-    Route::middleware('permission:approve-services')->group(function () {
-        Route::post('/services/{service}/approve', [WebAdminServiceController::class, 'approve'])->name('admin.services.approve');
-    });
+            /*
+            |--------------------------------------------------------------------------
+            | Sliders
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-sliders')->group(function () {
+                Route::get('/sliders', [SliderAdminController::class, 'index'])->name('admin.sliders.index');
+            });
 
-    Route::middleware('permission:reject-services')->group(function () {
-        Route::post('/services/{service}/reject', [WebAdminServiceController::class, 'reject'])->name('admin.services.reject');
-    });
+            Route::middleware('permission:create-sliders')->group(function () {
+                Route::post('/sliders', [SliderAdminController::class, 'store'])->name('admin.sliders.store');
+            });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reports Review
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:view-reports')->group(function () {
-        Route::get('/reports', [ServiceReportAdminController::class, 'index'])->name('admin.reports.index');
-    });
+            Route::middleware('permission:edit-sliders')->group(function () {
+                Route::put('/sliders/{slider}', [SliderAdminController::class, 'update'])->name('admin.sliders.update');
+            });
 
-    Route::middleware('permission:resolve-reports')->group(function () {
-        Route::post('/reports/{serviceReport}/resolve', [ServiceReportAdminController::class, 'resolve'])->name('admin.reports.resolve');
-    });
-});
+            Route::middleware('permission:delete-sliders')->group(function () {
+                Route::delete('/sliders/{slider}', [SliderAdminController::class, 'destroy'])->name('admin.sliders.destroy');
+            });
 
-Route::get('/categories-preview', function () {
-    return view('public.categories.index');
-})->name('categories.show.preview');
+            /*
+            |--------------------------------------------------------------------------
+            | Business Accounts Review
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-business-accounts')->group(function () {
+                Route::get('/business-accounts', [WebAdminBusinessAccountController::class, 'index'])->name('admin.business-accounts.index');
+            });
+
+            Route::middleware('permission:approve-business-accounts')->group(function () {
+                Route::post('/business-accounts/{businessAccount}/approve', [WebAdminBusinessAccountController::class, 'approve'])->name('admin.business-accounts.approve');
+            });
+
+            Route::middleware('permission:reject-business-accounts')->group(function () {
+                Route::post('/business-accounts/{businessAccount}/reject', [WebAdminBusinessAccountController::class, 'reject'])->name('admin.business-accounts.reject');
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Services Review
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-services')->group(function () {
+                Route::get('/services', [WebAdminServiceController::class, 'index'])->name('admin.services.index');
+            });
+
+            Route::middleware('permission:approve-services')->group(function () {
+                Route::post('/services/{service}/approve', [WebAdminServiceController::class, 'approve'])->name('admin.services.approve');
+            });
+
+            Route::middleware('permission:reject-services')->group(function () {
+                Route::post('/services/{service}/reject', [WebAdminServiceController::class, 'reject'])->name('admin.services.reject');
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reports Review
+            |--------------------------------------------------------------------------
+            */
+            Route::middleware('permission:view-reports')->group(function () {
+                Route::get('/reports', [ServiceReportAdminController::class, 'index'])->name('admin.reports.index');
+            });
+
+            Route::middleware('permission:resolve-reports')->group(function () {
+                Route::post('/reports/{serviceReport}/resolve', [ServiceReportAdminController::class, 'resolve'])->name('admin.reports.resolve');
+            });
+        });
+
+        Route::get('/categories-preview', function () {
+            return view('public.categories.index');
+        })->name('categories.show.preview');

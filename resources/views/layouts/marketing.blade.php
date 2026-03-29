@@ -31,7 +31,7 @@
             font-family: "Inter", "IBM Plex Sans Arabic", sans-serif;
         }
 
-        a, button, input, select {
+        a, button, input, select, textarea {
             font-family: inherit;
         }
     </style>

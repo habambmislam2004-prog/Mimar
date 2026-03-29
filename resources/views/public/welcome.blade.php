@@ -7,90 +7,21 @@
     @endphp
 
     <style>
-        .preview-page {
+        .landing-page {
             padding: 20px;
         }
 
-        .preview-toolbar {
-            max-width: 1480px;
-            margin: 0 auto 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .preview-title {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            color: #1e293b;
-        }
-
-        .preview-subtitle {
-            margin: 4px 0 0;
-            color: #64748b;
-            font-size: 13px;
-        }
-
-        .preview-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .device-select,
-        .lang-btn {
-            height: 44px;
-            border-radius: 999px;
-            border: 1px solid rgba(15,23,42,0.08);
-            background: rgba(255,255,255,0.95);
-            padding: 0 16px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #1f2f4d;
-            text-decoration: none;
-            box-shadow: 0 10px 25px rgba(15,23,42,0.04);
-        }
-
-        .preview-stage {
+        .landing-shell {
             max-width: 1480px;
             margin: 0 auto;
-            display: flex;
-            justify-content: center;
-        }
-
-        .device-frame {
-            width: 100%;
-            transition: max-width .3s ease;
-        }
-
-        .device-frame[data-device="desktop-large"] { max-width: 1440px; }
-        .device-frame[data-device="laptop"] { max-width: 1280px; }
-        .device-frame[data-device="ipad-pro"] { max-width: 1024px; }
-        .device-frame[data-device="ipad-mini"] { max-width: 768px; }
-        .device-frame[data-device="surface-pro-7"] { max-width: 912px; }
-        .device-frame[data-device="iphone-se"] { max-width: 375px; }
-        .device-frame[data-device="iphone-17-pro"] { max-width: 390px; }
-        .device-frame[data-device="iphone-14-pro-max"] { max-width: 430px; }
-        .device-frame[data-device="pixel-7"] { max-width: 412px; }
-        .device-frame[data-device="galaxy-s25-ultra"] { max-width: 412px; }
-        .device-frame[data-device="galaxy-z-fold-5"] { max-width: 344px; }
-
-        .device-screen {
-            background: rgba(255,255,255,0.32);
-            border: 1px solid rgba(255,255,255,0.45);
-            backdrop-filter: blur(16px);
-            border-radius: 34px;
-            box-shadow: 0 30px 80px rgba(15,23,42,0.14);
-            overflow: hidden;
         }
 
         .landing {
             background: #f5f7fb;
+            border-radius: 34px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(15,23,42,0.10);
+            border: 1px solid rgba(255,255,255,0.6);
         }
 
         .landing-header {
@@ -144,6 +75,7 @@
             flex-wrap: wrap;
         }
 
+        .lang-btn,
         .header-register {
             height: 42px;
             padding: 0 18px;
@@ -539,11 +471,11 @@
         }
 
         @media (max-width: 767px) {
-            .preview-page {
+            .landing-page {
                 padding: 12px;
             }
 
-            .device-screen {
+            .landing {
                 border-radius: 24px;
             }
 
@@ -613,261 +545,210 @@
         }
     </style>
 
-    <div class="preview-page">
-        <div class="preview-toolbar">
-            <div>
-                <h1 class="preview-title">Mi'mar Premium Preview</h1>
-                <p class="preview-subtitle">
-                    {{ app()->getLocale() === 'ar'
-                        ? 'اختر الجهاز لمعاينة الاستجابة على أحجام متعددة'
-                        : 'Choose a device to preview the responsive experience across multiple sizes' }}
-                </p>
-            </div>
+    <div class="landing-page">
+        <div class="landing-shell">
+            <div class="landing">
+                <header class="landing-header">
+                    <a href="{{ route('welcome') }}" class="brand">
+                        <div class="brand-mark">M</div>
+                        <div>
+                            <h2 class="brand-name">Mi'mar</h2>
+                            <p class="brand-sub">
+                                {{ $isArabic
+                                    ? 'منصة الخدمات العقارية والتقدير الذكي'
+                                    : 'Real Estate Services & Smart Estimation Platform' }}
+                            </p>
+                        </div>
+                    </a>
 
-            <div class="preview-controls">
-                <select class="device-select" id="deviceSelect">
-                    <option value="desktop-large">Desktop Large</option>
-                    <option value="laptop">Laptop</option>
-                    <option value="ipad-pro">iPad Pro</option>
-                    <option value="ipad-mini">iPad Mini</option>
-                    <option value="surface-pro-7">Surface Pro 7</option>
-                    <option value="iphone-se">iPhone SE</option>
-                    <option value="iphone-17-pro">iPhone 17 Pro</option>
-                    <option value="iphone-14-pro-max">iPhone 14 Pro Max</option>
-                    <option value="pixel-7">Pixel 7</option>
-                    <option value="galaxy-s25-ultra">Galaxy S25 Ultra</option>
-                    <option value="galaxy-z-fold-5">Galaxy Z Fold 5</option>
-                </select>
+                    <div class="header-actions">
+                        <a class="lang-btn" href="{{ route('lang.switch', $switchLocale) }}">
+                            {{ $isArabic ? 'EN' : 'AR' }}
+                        </a>
 
-                <a class="lang-btn" href="{{ route('lang.switch', $switchLocale) }}">
-                    {{ app()->getLocale() === 'ar' ? 'EN' : 'AR' }}
-                </a>
-            </div>
-        </div>
+                        <a href="{{ route('register') }}" class="header-register">
+                            {{ $isArabic ? 'إنشاء حساب' : 'Register' }}
+                        </a>
 
-        <div class="preview-stage">
-            <div class="device-frame" id="deviceFrame" data-device="desktop-large">
-                <div class="device-screen">
-                    <div class="landing">
-                        <header class="landing-header">
-                            <a href="{{ route('welcome') }}" class="brand">
-                                <div class="brand-mark">M</div>
-                                <div>
-                                    <h2 class="brand-name">Mi'mar</h2>
-                                    <p class="brand-sub">
-                                        {{ app()->getLocale() === 'ar'
-                                            ? 'منصة الخدمات العقارية والتقدير الذكي'
-                                            : 'Real Estate Services & Smart Estimation Platform' }}
-                                    </p>
-                                </div>
+                        <a href="{{ route('login') }}" class="header-login">
+                            {{ $isArabic ? 'تسجيل الدخول' : 'Login' }}
+                        </a>
+                    </div>
+                </header>
+
+                <section class="hero">
+                    <div class="hero-arrow prev">‹</div>
+                    <div class="hero-arrow next">›</div>
+
+                    <div class="hero-center-card">
+                        <h2>
+                            {{ $isArabic
+                                ? 'اكتشف خدماتك العقارية الذكية وابدأ بثقة'
+                                : 'Discover smart real estate services and start with confidence' }}
+                        </h2>
+
+                        <p>
+                            {{ $isArabic
+                                ? 'استعرض الخدمات، قارن الخيارات، وابدأ تقدير مشروعك قبل التنفيذ ضمن تجربة رقمية فخمة وواضحة.'
+                                : 'Browse services, compare options, and estimate your project before execution through a premium digital experience.' }}
+                        </p>
+
+                        <div class="hero-buttons">
+                            <a href="{{ route('register') }}" class="hero-btn-primary">
+                                {{ $isArabic ? 'ابدأ الآن' : 'Get started' }}
                             </a>
 
-                            <div class="header-actions">
-                                <a href="{{ route('register') }}" class="header-register">
-                                    {{ app()->getLocale() === 'ar' ? 'إنشاء حساب' : 'Register' }}
-                                </a>
-
-                                <a href="{{ route('login') }}" class="header-login">
-                                    {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
-                                </a>
-                            </div>
-                        </header>
-
-                        <section class="hero">
-                            <div class="hero-arrow prev">‹</div>
-                            <div class="hero-arrow next">›</div>
-
-                            <div class="hero-center-card">
-                                <h2>
-                                    {{ app()->getLocale() === 'ar'
-                                        ? 'اكتشف خدماتك العقارية الذكية وابدأ بثقة'
-                                        : 'Discover smart real estate services and start with confidence' }}
-                                </h2>
-
-                                <p>
-                                    {{ app()->getLocale() === 'ar'
-                                        ? 'استعرض الخدمات، قارن الخيارات، وابدأ تقدير مشروعك قبل التنفيذ ضمن تجربة رقمية فخمة وواضحة.'
-                                        : 'Browse services, compare options, and estimate your project before execution through a premium digital experience.' }}
-                                </p>
-
-                                <div class="hero-buttons">
-                                    <a href="{{ route('register') }}" class="hero-btn-primary">
-                                        {{ app()->getLocale() === 'ar' ? 'ابدأ الآن' : 'Get started' }}
-                                    </a>
-
-                                    <a href="{{ route('estimations.create') }}" class="hero-btn-secondary">
-                                        {{ app()->getLocale() === 'ar' ? 'التقدير الذكي' : 'Smart estimation' }}
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="hero-dots">
-                                <div class="hero-dot"></div>
-                                <div class="hero-dot active"></div>
-                                <div class="hero-dot"></div>
-                            </div>
-                        </section>
-
-                        <div class="landing-body">
-                            <section class="stats-strip">
-                                <div class="stat-card">
-                                    <div class="stat-number">120+</div>
-                                    <div class="stat-label">{{ app()->getLocale() === 'ar' ? 'خدمة قابلة للإدارة داخل المنصة' : 'Managed service options' }}</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-number">35+</div>
-                                    <div class="stat-label">{{ app()->getLocale() === 'ar' ? 'حساب أعمال ومزود خدمة' : 'Business accounts & providers' }}</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-number">08</div>
-                                    <div class="stat-label">{{ app()->getLocale() === 'ar' ? 'تصنيفات تشغيلية رئيسية' : 'Main service categories' }}</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-number">24/7</div>
-                                    <div class="stat-label">{{ app()->getLocale() === 'ar' ? 'وصول رقمي للخدمات والمحادثات' : 'Digital access to services and messaging' }}</div>
-                                </div>
-                            </section>
-
-                            <section class="grid-two">
-                                <div class="card">
-                                    <h3 class="section-heading">
-                                        {{ app()->getLocale() === 'ar' ? 'من نحن' : 'About us' }}
-                                    </h3>
-
-                                    <p class="section-copy">
-                                        {{ app()->getLocale() === 'ar'
-                                            ? 'Mi\'mar منصة عقارية حديثة تربط المستخدمين بمقدمي الخدمات، وتمنحهم تجربة عملية تبدأ من الاكتشاف والمقارنة، وتمر بالطلبات والمحادثات، وتنتهي بإمكانية تقدير أولي للكميات والتكلفة قبل التنفيذ.'
-                                            : 'Mi\'mar is a modern real estate service platform that helps users discover, compare, request, communicate, and estimate quantities/cost before execution.' }}
-                                    </p>
-                                </div>
-
-                                <div class="card" style="background:#eef4ff;">
-                                    <h4 class="why-title">
-                                        {{ app()->getLocale() === 'ar' ? 'لماذا Mi\'mar؟' : 'Why choose Mi\'mar?' }}
-                                    </h4>
-
-                                    <ul class="why-list">
-                                        <li>{{ app()->getLocale() === 'ar' ? 'واجهة أنيقة ومتجاوبة على مختلف الأجهزة' : 'Elegant and responsive across multiple devices' }}</li>
-                                        <li>{{ app()->getLocale() === 'ar' ? 'خدمات، طلبات، ومحادثات ضمن تدفق واحد' : 'Services, requests, and chat in one flow' }}</li>
-                                        <li>{{ app()->getLocale() === 'ar' ? 'تقدير ذكي لدعم القرار قبل التنفيذ' : 'Smart estimation before execution' }}</li>
-                                        <li>{{ app()->getLocale() === 'ar' ? 'مخصص للمشاريع العقارية الصغيرة والمتوسطة' : 'Designed for small and medium real estate projects' }}</li>
-                                    </ul>
-                                </div>
-                            </section>
-
-                            <section class="services-section">
-                                <h3 class="section-heading">
-                                    {{ app()->getLocale() === 'ar' ? 'الخدمات المميزة' : 'Featured services' }}
-                                </h3>
-
-                                <div class="services-grid">
-                                    <article class="service-card">
-                                        <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80" alt="service">
-                                        <div class="service-content">
-                                            <span class="service-pill">{{ app()->getLocale() === 'ar' ? 'تشطيبات' : 'Finishing' }}</span>
-                                            <h4 class="service-title">{{ app()->getLocale() === 'ar' ? 'التشطيبات الداخلية' : 'Interior finishing' }}</h4>
-                                            <p class="service-text">{{ app()->getLocale() === 'ar' ? 'تنفيذ تشطيبات احترافية للشقق والمشاريع السكنية الصغيرة.' : 'Professional interior finishing for apartments and smaller residential projects.' }}</p>
-                                        </div>
-                                    </article>
-
-                                    <article class="service-card">
-                                        <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80" alt="service">
-                                        <div class="service-content">
-                                            <span class="service-pill">{{ app()->getLocale() === 'ar' ? 'دهان' : 'Painting' }}</span>
-                                            <h4 class="service-title">{{ app()->getLocale() === 'ar' ? 'أعمال الدهان' : 'Painting works' }}</h4>
-                                            <p class="service-text">{{ app()->getLocale() === 'ar' ? 'خدمات دهان منظمة بجودة واضحة وتنفيذ نظيف.' : 'Organized painting services with clean execution and quality results.' }}</p>
-                                        </div>
-                                    </article>
-
-                                    <article class="service-card">
-                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" alt="service">
-                                        <div class="service-content">
-                                            <span class="service-pill">{{ app()->getLocale() === 'ar' ? 'بناء' : 'Construction' }}</span>
-                                            <h4 class="service-title">{{ app()->getLocale() === 'ar' ? 'البناء الخفيف والترميم' : 'Light construction & repair' }}</h4>
-                                            <p class="service-text">{{ app()->getLocale() === 'ar' ? 'حلول مناسبة لأعمال الجدران والترميم والتجهيز.' : 'Suitable solutions for walls, repair works, and project setup.' }}</p>
-                                        </div>
-                                    </article>
-
-                                    <article class="service-card">
-                                        <img src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80" alt="service">
-                                        <div class="service-content">
-                                            <span class="service-pill">{{ app()->getLocale() === 'ar' ? 'تصميم' : 'Design' }}</span>
-                                            <h4 class="service-title">{{ app()->getLocale() === 'ar' ? 'استشارات وتصميم' : 'Consultation & design' }}</h4>
-                                            <p class="service-text">{{ app()->getLocale() === 'ar' ? 'إرشاد أولي وخيارات تصميمية للمساحات السكنية.' : 'Early consultation and design ideas for residential spaces.' }}</p>
-                                        </div>
-                                    </article>
-                                </div>
-                            </section>
-
-                            <section class="cta-band">
-                                <div>
-                                    <h3>{{ app()->getLocale() === 'ar' ? 'ابدأ بتقدير مشروعك قبل أي خطوة تنفيذية' : 'Estimate your project before any execution step' }}</h3>
-                                    <p>
-                                        {{ app()->getLocale() === 'ar'
-                                            ? 'موديول التقدير الذكي في Mi\'mar يساعدك على حساب الكميات والتكلفة التقريبية وربط النتيجة مباشرة بالخدمات المناسبة.'
-                                            : 'Mi\'mar’s smart estimation module helps you calculate quantities and estimated cost, then connect the result directly with matching services.' }}
-                                    </p>
-                                </div>
-
-                                <a href="{{ route('estimations.create') }}">
-                                    {{ app()->getLocale() === 'ar' ? 'ابدأ التقدير' : 'Start estimation' }}
-                                </a>
-                            </section>
-
-                            <footer class="footer">
-                                <div>
-                                    <h4>Mi'mar</h4>
-                                    <p>{{ app()->getLocale() === 'ar' ? 'منصة خدمات عقارية وتقدير ذكي للمشاريع الصغيرة والمتوسطة.' : 'A real estate services and smart estimation platform for small and medium projects.' }}</p>
-                                </div>
-
-                                <div>
-                                    <h4>{{ app()->getLocale() === 'ar' ? 'استكشف' : 'Explore' }}</h4>
-                                    <a href="{{ route('welcome') }}">{{ app()->getLocale() === 'ar' ? 'الرئيسية' : 'Home' }}</a>
-                                    <a href="{{ route('login') }}">{{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}</a>
-                                    <a href="{{ route('register') }}">{{ app()->getLocale() === 'ar' ? 'إنشاء حساب' : 'Register' }}</a>
-                                </div>
-
-                                <div>
-                                    <h4>{{ app()->getLocale() === 'ar' ? 'الدعم' : 'Support' }}</h4>
-                                    <p>{{ app()->getLocale() === 'ar' ? 'الطلبات' : 'Orders' }}</p>
-                                    <p>{{ app()->getLocale() === 'ar' ? 'المحادثات' : 'Conversations' }}</p>
-                                    <p>{{ app()->getLocale() === 'ar' ? 'التقدير الذكي' : 'Smart estimation' }}</p>
-                                </div>
-
-                                <div>
-                                    <h4>{{ app()->getLocale() === 'ar' ? 'تواصل' : 'Get in touch' }}</h4>
-                                    <p>info@mimar.test</p>
-                                    <p>+963 000 000 000</p>
-                                    <p>{{ app()->getLocale() === 'ar' ? 'سوريا' : 'Syria' }}</p>
-                                </div>
-                            </footer>
+                            <a href="{{ route('estimations.create') }}" class="hero-btn-secondary">
+                                {{ $isArabic ? 'التقدير الذكي' : 'Smart estimation' }}
+                            </a>
                         </div>
                     </div>
+
+                    <div class="hero-dots">
+                        <div class="hero-dot"></div>
+                        <div class="hero-dot active"></div>
+                        <div class="hero-dot"></div>
+                    </div>
+                </section>
+
+                <div class="landing-body">
+                    <section class="stats-strip">
+                        <div class="stat-card">
+                            <div class="stat-number">120+</div>
+                            <div class="stat-label">{{ $isArabic ? 'خدمة قابلة للإدارة داخل المنصة' : 'Managed service options' }}</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">35+</div>
+                            <div class="stat-label">{{ $isArabic ? 'حساب أعمال ومزود خدمة' : 'Business accounts & providers' }}</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">08</div>
+                            <div class="stat-label">{{ $isArabic ? 'تصنيفات تشغيلية رئيسية' : 'Main service categories' }}</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">{{ $isArabic ? 'وصول رقمي للخدمات والمحادثات' : 'Digital access to services and messaging' }}</div>
+                        </div>
+                    </section>
+
+                    <section class="grid-two">
+                        <div class="card">
+                            <h3 class="section-heading">
+                                {{ $isArabic ? 'من نحن' : 'About us' }}
+                            </h3>
+
+                            <p class="section-copy">
+                                {{ $isArabic
+                                    ? 'Mi\'mar منصة عقارية حديثة تربط المستخدمين بمقدمي الخدمات، وتمنحهم تجربة عملية تبدأ من الاكتشاف والمقارنة، وتمر بالطلبات والمحادثات، وتنتهي بإمكانية تقدير أولي للكميات والتكلفة قبل التنفيذ.'
+                                    : 'Mi\'mar is a modern real estate service platform that helps users discover, compare, request, communicate, and estimate quantities/cost before execution.' }}
+                            </p>
+                        </div>
+
+                        <div class="card" style="background:#eef4ff;">
+                            <h4 class="why-title">
+                                {{ $isArabic ? 'لماذا Mi\'mar؟' : 'Why choose Mi\'mar?' }}
+                            </h4>
+
+                            <ul class="why-list">
+                                <li>{{ $isArabic ? 'واجهة أنيقة ومتجاوبة على مختلف الأجهزة' : 'Elegant and responsive across multiple devices' }}</li>
+                                <li>{{ $isArabic ? 'خدمات، طلبات، ومحادثات ضمن تدفق واحد' : 'Services, requests, and chat in one flow' }}</li>
+                                <li>{{ $isArabic ? 'تقدير ذكي لدعم القرار قبل التنفيذ' : 'Smart estimation before execution' }}</li>
+                                <li>{{ $isArabic ? 'مخصص للمشاريع العقارية الصغيرة والمتوسطة' : 'Designed for small and medium real estate projects' }}</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="services-section">
+                        <h3 class="section-heading">
+                            {{ $isArabic ? 'الخدمات المميزة' : 'Featured services' }}
+                        </h3>
+
+                        <div class="services-grid">
+                            <article class="service-card">
+                                <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80" alt="service">
+                                <div class="service-content">
+                                    <span class="service-pill">{{ $isArabic ? 'تشطيبات' : 'Finishing' }}</span>
+                                    <h4 class="service-title">{{ $isArabic ? 'التشطيبات الداخلية' : 'Interior finishing' }}</h4>
+                                    <p class="service-text">{{ $isArabic ? 'تنفيذ تشطيبات احترافية للشقق والمشاريع السكنية الصغيرة.' : 'Professional interior finishing for apartments and smaller residential projects.' }}</p>
+                                </div>
+                            </article>
+
+                            <article class="service-card">
+                                <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80" alt="service">
+                                <div class="service-content">
+                                    <span class="service-pill">{{ $isArabic ? 'دهان' : 'Painting' }}</span>
+                                    <h4 class="service-title">{{ $isArabic ? 'أعمال الدهان' : 'Painting works' }}</h4>
+                                    <p class="service-text">{{ $isArabic ? 'خدمات دهان منظمة بجودة واضحة وتنفيذ نظيف.' : 'Organized painting services with clean execution and quality results.' }}</p>
+                                </div>
+                            </article>
+
+                            <article class="service-card">
+                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" alt="service">
+                                <div class="service-content">
+                                    <span class="service-pill">{{ $isArabic ? 'بناء' : 'Construction' }}</span>
+                                    <h4 class="service-title">{{ $isArabic ? 'البناء الخفيف والترميم' : 'Light construction & repair' }}</h4>
+                                    <p class="service-text">{{ $isArabic ? 'حلول مناسبة لأعمال الجدران والترميم والتجهيز.' : 'Suitable solutions for walls, repair works, and project setup.' }}</p>
+                                </div>
+                            </article>
+
+                            <article class="service-card">
+                                <img src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80" alt="service">
+                                <div class="service-content">
+                                    <span class="service-pill">{{ $isArabic ? 'تصميم' : 'Design' }}</span>
+                                    <h4 class="service-title">{{ $isArabic ? 'استشارات وتصميم' : 'Consultation & design' }}</h4>
+                                    <p class="service-text">{{ $isArabic ? 'إرشاد أولي وخيارات تصميمية للمساحات السكنية.' : 'Early consultation and design ideas for residential spaces.' }}</p>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="cta-band">
+                        <div>
+                            <h3>{{ $isArabic ? 'ابدأ بتقدير مشروعك قبل أي خطوة تنفيذية' : 'Estimate your project before any execution step' }}</h3>
+                            <p>
+                                {{ $isArabic
+                                    ? 'موديول التقدير الذكي في Mi\'mar يساعدك على حساب الكميات والتكلفة التقريبية وربط النتيجة مباشرة بالخدمات المناسبة.'
+                                    : 'Mi\'mar’s smart estimation module helps you calculate quantities and estimated cost, then connect the result directly with matching services.' }}
+                            </p>
+                        </div>
+
+                        <a href="{{ route('estimations.create') }}">
+                            {{ $isArabic ? 'ابدأ التقدير' : 'Start estimation' }}
+                        </a>
+                    </section>
+
+                    <footer class="footer">
+                        <div>
+                            <h4>Mi'mar</h4>
+                            <p>{{ $isArabic ? 'منصة خدمات عقارية وتقدير ذكي للمشاريع الصغيرة والمتوسطة.' : 'A real estate services and smart estimation platform for small and medium projects.' }}</p>
+                        </div>
+
+                        <div>
+                            <h4>{{ $isArabic ? 'استكشف' : 'Explore' }}</h4>
+                            <a href="{{ route('welcome') }}">{{ $isArabic ? 'الرئيسية' : 'Home' }}</a>
+                            <a href="{{ route('login') }}">{{ $isArabic ? 'تسجيل الدخول' : 'Login' }}</a>
+                            <a href="{{ route('register') }}">{{ $isArabic ? 'إنشاء حساب' : 'Register' }}</a>
+                        </div>
+
+                        <div>
+                            <h4>{{ $isArabic ? 'الدعم' : 'Support' }}</h4>
+                            <p>{{ $isArabic ? 'الطلبات' : 'Orders' }}</p>
+                            <p>{{ $isArabic ? 'المحادثات' : 'Conversations' }}</p>
+                            <p>{{ $isArabic ? 'التقدير الذكي' : 'Smart estimation' }}</p>
+                        </div>
+
+                        <div>
+                            <h4>{{ $isArabic ? 'تواصل' : 'Get in touch' }}</h4>
+                            <p>info@mimar.test</p>
+                            <p>+963 000 000 000</p>
+                            <p>{{ $isArabic ? 'سوريا' : 'Syria' }}</p>
+                        </div>
+                    </footer>
                 </div>
             </div>
         </div>
     </div>
-
-   <script>
-    const deviceSelect = document.getElementById('deviceSelect');
-    const deviceFrame = document.getElementById('deviceFrame');
-
-    const savedDevice = localStorage.getItem('mimar-preview-device');
-    if (savedDevice && deviceSelect && deviceFrame) {
-        deviceSelect.value = savedDevice;
-        deviceFrame.setAttribute('data-device', savedDevice);
-    }
-
-    if (deviceSelect) {
-        deviceSelect.addEventListener('change', function () {
-            localStorage.setItem('mimar-preview-device', this.value);
-            if (deviceFrame) {
-                deviceFrame.setAttribute('data-device', this.value);
-            }
-        });
-    }
-</script>
 @endsection

@@ -271,6 +271,12 @@
                     </a>
                 @endcan
 
+                @can('view-dynamic-fields')
+                    <a href="{{ route('admin.dynamic-fields.index') }}" class="{{ request()->routeIs('admin.dynamic-fields.*') ? 'active' : '' }}">
+                        {{ $isArabic ? 'الحقول الديناميكية' : 'Dynamic Fields' }}
+                    </a>
+                @endcan
+
                 @can('view-cities')
                     <a href="{{ route('admin.cities.index') }}" class="{{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
                         {{ $isArabic ? 'المدن' : 'Cities' }}
