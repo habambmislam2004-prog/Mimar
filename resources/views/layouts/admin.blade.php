@@ -301,6 +301,15 @@
                     </a>
                 @endcan
 
+               @can('view-orders')
+                   <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                         {{ $isArabic ? 'الطلبات' : 'Orders' }}
+                   </a>
+               @endcan
+                 <a href="{{ route('admin.city-material-prices.index') }}" class="{{ request()->routeIs('admin.city-material-prices.*') ? 'active' : '' }}">
+                    {{ $isArabic ? 'أسعار المواد' : 'Material Prices' }}
+                </a>
+
                 @can('view-reports')
                     <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                         {{ $isArabic ? 'البلاغات' : 'Reports' }}

@@ -36,6 +36,10 @@ class SubcategoryAdminController extends Controller
             $selectedSubcategory = $subcategoryItems->first();
         }
 
+        if ($selectedSubcategory && method_exists($selectedSubcategory, 'load')) {
+            $selectedSubcategory->loadMissing('category');
+        }
+
         $categories = Category::query()
             ->orderBy('sort_order')
             ->orderBy('name_ar')

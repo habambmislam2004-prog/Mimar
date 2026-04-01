@@ -35,6 +35,16 @@ class BusinessAccountController extends Controller
 
         $latestBusinessAccount = $businessAccounts->first();
 
+        $selectedBusinessAccount = null;
+
+        if ($request->filled('selected')) {
+            $selectedBusinessAccount = $businessAccounts->firstWhere('id', (int) $request->query('selected'));
+        }
+
+        if (! $selectedBusinessAccount) {
+            $selectedBusinessAccount = $latestBusinessAccount;
+        }
+
         $cities = City::query()
             ->latest()
             ->get();
@@ -43,11 +53,17 @@ class BusinessAccountController extends Controller
             ->latest()
             ->get();
 
+        $showCreateForm = (bool) $request->boolean('new');
+        $showEditForm = (bool) $request->boolean('edit') && $selectedBusinessAccount;
+
         return view('public.business-account.index', compact(
             'businessAccounts',
             'latestBusinessAccount',
+            'selectedBusinessAccount',
             'cities',
-            'activityTypes'
+            'activityTypes',
+            'showCreateForm',
+            'showEditForm'
         ));
     }
 
@@ -58,7 +74,7 @@ class BusinessAccountController extends Controller
 
     public function store(StoreBusinessAccountWebRequest $request): RedirectResponse
     {
-        $this->service->create(
+        $businessAccount = $this->service->create(
             $request->user(),
             $request->validated(),
             $request->file('images', []),
@@ -66,7 +82,7 @@ class BusinessAccountController extends Controller
         );
 
         return redirect()
-            ->route('business-account.index')
+            ->route('business-account.index', ['selected' => $businessAccount->id])
             ->with('success', __('messages.business_account_submitted'));
     }
 
@@ -88,7 +104,7 @@ class BusinessAccountController extends Controller
         );
 
         return redirect()
-            ->route('business-account.index')
+            ->route('business-account.index', ['selected' => $businessAccount->id])
             ->with('success', __('messages.business_account_updated'));
     }
 }

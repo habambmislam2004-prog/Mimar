@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ServiceController extends Controller
 {
@@ -116,5 +117,59 @@ class ServiceController extends Controller
         return redirect()
             ->route('services.show', $service)
             ->with('success', __('messages.updated_successfully'));
+    }
+
+    public function destroy(Service $service): RedirectResponse
+    {
+        if (! Auth::check()) {
+            abort(403);
+        }
+
+        // التحقق أن الخدمة تعود للمستخدم الحالي عبر حساب الأعمال
+        $service->loadMissing(['businessAccount', 'images']);
+
+        if (! $service->businessAccount || (int) $service->businessAccount->user_id !== (int) Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // حذف الصور من التخزين
+        foreach ($service->images as $image) {
+            if (! empty($image->path) && Storage::disk('public')->exists($image->path)) {
+                Storage::disk('public')->delete($image->path);
+            }
+        }
+
+        // حذف العلاقات المرتبطة إن وجدت
+        if (method_exists($service, 'images')) {
+            $service->images()->delete();
+        }
+
+        if (method_exists($service, 'favorites')) {
+            $service->favorites()->delete();
+        }
+
+        if (method_exists($service, 'reports')) {
+            $service->reports()->delete();
+        }
+
+        if (method_exists($service, 'dynamicFieldValues')) {
+            $service->dynamicFieldValues()->delete();
+        }
+
+        // إذا عندك طلبات مرتبطة بالخدمة وما بدك تمنعي الحذف
+        if (method_exists($service, 'orders')) {
+            $service->orders()->delete();
+        }
+
+        // إذا عندك تقييمات مرتبطة بالخدمة
+        if (method_exists($service, 'ratings')) {
+            $service->ratings()->delete();
+        }
+
+        $service->delete();
+
+        return redirect()
+            ->route('services.index')
+            ->with('success', __('messages.deleted_successfully'));
     }
 }

@@ -3,7 +3,16 @@
 @section('content')
     @php
         $isArabic = app()->getLocale() === 'ar';
+        $initialLat = old('latitude', $service->latitude ?? 33.5138);
+        $initialLng = old('longitude', $service->longitude ?? 36.2765);
     @endphp
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    />
 
     <style>
         .service-form-shell {
@@ -196,8 +205,47 @@
             color: #475569;
         }
 
+        .service-map-wrap {
+            display: grid;
+            gap: 10px;
+        }
+
+        .service-map-box {
+            width: 100%;
+            height: 360px;
+            border-radius: 22px;
+            border: 1px solid rgba(15,23,42,.08);
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .service-coordinates-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .service-coordinate-chip {
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid rgba(15,23,42,.06);
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .service-open-map-link {
+            color: #4458db;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
         @media (max-width: 767px) {
-            .service-form-grid {
+            .service-form-grid,
+            .current-images,
+            .service-coordinates-preview {
                 grid-template-columns: 1fr;
             }
 
@@ -205,8 +253,8 @@
                 font-size: 30px;
             }
 
-            .current-images {
-                grid-template-columns: 1fr;
+            .service-map-box {
+                height: 300px;
             }
         }
     </style>
@@ -216,8 +264,8 @@
             <h1>{{ $isArabic ? 'تعديل الخدمة' : 'Edit service' }}</h1>
             <p>
                 {{ $isArabic
-                    ? 'حدّث بيانات الخدمة الحالية، وعدّل صورها عند الحاجة مع الحفاظ على عرض احترافي داخل المنصة.'
-                    : 'Update the current service information and adjust its images when needed while keeping a polished presence on the platform.' }}
+                    ? 'حدّث بيانات الخدمة الحالية، وعدّل موقعها وصورها عند الحاجة مع الحفاظ على عرض احترافي داخل المنصة.'
+                    : 'Update the current service details, adjust its location and images when needed, and keep a polished presence on the platform.' }}
             </p>
         </section>
 
@@ -310,6 +358,56 @@
                     </div>
 
                     <div class="service-form-group full">
+                        <label class="service-label">{{ $isArabic ? 'حدد موقع الخدمة على الخريطة' : 'Pick service location on map' }}</label>
+
+                        <div class="service-map-wrap">
+                            <div id="serviceMap" class="service-map-box"></div>
+
+                            <div class="service-help">
+                                {{ $isArabic
+                                    ? 'اضغط على الخريطة لتحديد موقع الخدمة أو اسحب العلامة إلى المكان الصحيح.'
+                                    : 'Click on the map to select the service location or drag the marker to the correct place.' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-form-group">
+                        <label class="service-label">{{ $isArabic ? 'خط العرض' : 'Latitude' }}</label>
+                        <input id="latitudeInput" class="service-input" type="text" name="latitude" value="{{ old('latitude', $service->latitude) }}" readonly>
+                        @error('latitude') <div class="service-error">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="service-form-group">
+                        <label class="service-label">{{ $isArabic ? 'خط الطول' : 'Longitude' }}</label>
+                        <input id="longitudeInput" class="service-input" type="text" name="longitude" value="{{ old('longitude', $service->longitude) }}" readonly>
+                        @error('longitude') <div class="service-error">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="service-form-group full">
+                        <div class="service-coordinates-preview">
+                            <div class="service-coordinate-chip">
+                                Latitude:
+                                <span id="latitudePreview">{{ old('latitude', $service->latitude ?? '—') }}</span>
+                            </div>
+
+                            <div class="service-coordinate-chip">
+                                Longitude:
+                                <span id="longitudePreview">{{ old('longitude', $service->longitude ?? '—') }}</span>
+                            </div>
+                        </div>
+
+                        @if ($service->latitude && $service->longitude)
+                            <a
+                                class="service-open-map-link"
+                                href="https://www.google.com/maps?q={{ $service->latitude }},{{ $service->longitude }}"
+                                target="_blank"
+                            >
+                                {{ $isArabic ? 'فتح الموقع الحالي على الخريطة' : 'Open current location on map' }}
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="service-form-group full">
                         <label class="service-label">{{ $isArabic ? 'إضافة صور جديدة' : 'Add new images' }}</label>
                         <input class="service-file" type="file" name="images[]" multiple accept=".jpg,.jpeg,.png,.webp">
                         <div class="service-help">
@@ -349,4 +447,74 @@
             </form>
         </section>
     </div>
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const latInput = document.getElementById('latitudeInput');
+            const lngInput = document.getElementById('longitudeInput');
+            const latPreview = document.getElementById('latitudePreview');
+            const lngPreview = document.getElementById('longitudePreview');
+            const mapElement = document.getElementById('serviceMap');
+
+            if (!mapElement || !latInput || !lngInput) {
+                return;
+            }
+
+            const fallbackLat = parseFloat(@json((float) $initialLat));
+            const fallbackLng = parseFloat(@json((float) $initialLng));
+
+            const oldLat = parseFloat(latInput.value);
+            const oldLng = parseFloat(lngInput.value);
+
+            const hasSavedLocation = !isNaN(oldLat) && !isNaN(oldLng);
+
+            const startLat = hasSavedLocation ? oldLat : fallbackLat;
+            const startLng = hasSavedLocation ? oldLng : fallbackLng;
+
+            const map = L.map('serviceMap').setView([startLat, startLng], hasSavedLocation ? 13 : 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            let marker = L.marker([startLat, startLng], {
+                draggable: true
+            }).addTo(map);
+
+            function updateLocation(lat, lng) {
+                const normalizedLat = parseFloat(lat).toFixed(7);
+                const normalizedLng = parseFloat(lng).toFixed(7);
+
+                latInput.value = normalizedLat;
+                lngInput.value = normalizedLng;
+
+                if (latPreview) latPreview.textContent = normalizedLat;
+                if (lngPreview) lngPreview.textContent = normalizedLng;
+
+                marker.setLatLng([parseFloat(normalizedLat), parseFloat(normalizedLng)]);
+            }
+
+            updateLocation(startLat, startLng);
+
+            map.on('click', function (e) {
+                updateLocation(e.latlng.lat, e.latlng.lng);
+            });
+
+            marker.on('dragend', function (e) {
+                const position = e.target.getLatLng();
+                updateLocation(position.lat, position.lng);
+            });
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        });
+    </script>
 @endsection

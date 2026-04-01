@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Web\User\StoreUserWebRequest;
 use App\Http\Requests\Web\User\UpdateUserWebRequest;
 use App\Services\Web\UserWebService;
+use Illuminate\Support\Facades\Auth;
 
 class UserAdminController extends Controller
 {
@@ -41,7 +42,15 @@ class UserAdminController extends Controller
             SystemRole::USER->value,
         ];
 
-        return view('admin.users.index', compact('users', 'selectedUser', 'roles'));
+        $stats = [
+            'total' => User::query()->count(),
+            'active' => User::query()->where('is_active', true)->count(),
+            'inactive' => User::query()->where('is_active', false)->count(),
+            'admins' => User::query()->where('account_type', SystemRole::ADMIN->value)->count(),
+            'users' => User::query()->where('account_type', SystemRole::USER->value)->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'selectedUser', 'roles', 'stats'));
     }
 
     public function store(StoreUserWebRequest $request): RedirectResponse
@@ -64,7 +73,7 @@ class UserAdminController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        $this->service->delete($user);
+        $this->service->delete($user, Auth::user());
 
         return redirect()
             ->route('admin.users.index')

@@ -98,6 +98,13 @@ return [
     'final_qty' => 'Final quantity',
     'price' => 'Price',
     'total' => 'Total',
+    'created_successfully' => 'Created successfully',
+    'updated_successfully' => 'Updated successfully',
+    'deleted_successfully' => 'Deleted successfully',
+    'order_accepted_successfully' => 'Order accepted successfully',
+    'order_rejected_successfully' => 'Order rejected successfully',
+    'order_not_pending' => 'This order can no longer be changed because it is no longer pending',
+    'not_allowed_action' => 'This action is not allowed.',
 
     'attributes' => [
         'name' => 'Name',

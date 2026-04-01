@@ -35,6 +35,10 @@ class CategoryAdminController extends Controller
             $selectedCategory = $categoryItems->first();
         }
 
+        if ($selectedCategory && method_exists($selectedCategory, 'load')) {
+            $selectedCategory->loadMissing('subcategories');
+        }
+
         return view('admin.categories.index', compact('categories', 'selectedCategory'));
     }
 

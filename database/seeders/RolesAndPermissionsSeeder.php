@@ -201,6 +201,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'accept-orders',
             'reject-orders',
             'cancel-orders',
+            
 
             'create-ratings',
 

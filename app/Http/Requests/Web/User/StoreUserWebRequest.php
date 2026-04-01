@@ -24,7 +24,7 @@ class StoreUserWebRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:30', 'unique:users,phone'],
-            'password' => ['nullable', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:8'],
             'locale' => ['required', Rule::in(['ar', 'en'])],
             'is_active' => ['required', 'in:0,1'],
             'account_type' => ['required', Rule::in([

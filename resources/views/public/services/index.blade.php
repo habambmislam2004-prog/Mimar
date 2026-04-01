@@ -196,6 +196,7 @@
             justify-content: space-between;
             gap: 12px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .service-pill {
@@ -214,6 +215,20 @@
             color: #64748b;
             font-size: 12px;
             font-weight: 700;
+        }
+
+        .service-owner-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: rgba(5,150,105,0.10);
+            color: #059669;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid rgba(5,150,105,0.14);
         }
 
         .service-title {
@@ -364,9 +379,11 @@
                 <h2 class="panel-title">{{ $isArabic ? 'الخدمات' : 'Services' }}</h2>
 
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <a href="{{ route('services.create') }}" class="service-btn-primary">
-                        {{ $isArabic ? 'إضافة خدمة' : 'Create service' }}
-                    </a>
+                    @can('create-services')
+                        <a href="{{ route('services.create') }}" class="service-btn-primary">
+                            {{ $isArabic ? 'إضافة خدمة' : 'Create service' }}
+                        </a>
+                    @endcan
 
                     <div class="services-count">
                         {{ $isArabic ? 'إجمالي النتائج:' : 'Total results:' }} {{ $services->total() }}
@@ -386,6 +403,10 @@
                             $imageUrl = $image
                                 ? asset('storage/' . ltrim($image, '/'))
                                 : $fallbackImages[$loop->index % count($fallbackImages)];
+
+                            $isOwner = auth()->check()
+                                && $service->businessAccount
+                                && (int) $service->businessAccount->user_id === (int) auth()->id();
                         @endphp
 
                         <article class="service-card">
@@ -394,7 +415,16 @@
                             <div class="service-body">
                                 <div class="service-topline">
                                     <span class="service-pill">{{ $categoryLabel }}</span>
-                                    <span class="service-id">#{{ $service->id }}</span>
+
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        @if ($isOwner)
+                                            <span class="service-owner-badge">
+                                                {{ $isArabic ? 'خدمتي' : 'My Service' }}
+                                            </span>
+                                        @endif
+
+                                        <span class="service-id">#{{ $service->id }}</span>
+                                    </div>
                                 </div>
 
                                 <h3 class="service-title">{{ $title }}</h3>
@@ -426,34 +456,56 @@
                                 </div>
 
                                 <div class="service-actions">
-                                    <a href="{{ route('services.show', $service) }}" class="service-btn-secondary">
-                                        {{ $isArabic ? 'التفاصيل' : 'Details' }}
-                                    </a>
+                                    @if ($isOwner)
+                                        <a href="{{ route('services.show', $service) }}" class="service-btn-secondary">
+                                            {{ $isArabic ? 'التفاصيل' : 'Details' }}
+                                        </a>
 
-                                    <a href="{{ route('orders.index') }}" class="service-btn-primary">
-                                        {{ $isArabic ? 'إرسال طلب' : 'Send request' }}
-                                    </a>
+                                        <a href="{{ route('services.edit', $service) }}" class="service-btn-secondary">
+                                            {{ $isArabic ? 'تعديل' : 'Edit' }}
+                                        </a>
 
-                                    @if (in_array($service->id, $favoriteIds))
-                                        <form method="POST" action="{{ route('favorites.destroy', $service->id) }}" style="margin:0;">
+                                        <form method="POST"
+                                            action="{{ route('services.destroy', $service) }}"
+                                            style="margin:0;"
+                                            onsubmit="return confirm('{{ $isArabic ? 'هل أنت متأكد من حذف هذه الخدمة؟' : 'Are you sure you want to delete this service?' }}');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="service-btn-secondary">
-                                                {{ $isArabic ? 'إزالة من المفضلة' : 'Remove favorite' }}
+
+                                            <button type="submit"
+                                                    class="service-btn-secondary"
+                                                    style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">
+                                                {{ $isArabic ? 'حذف' : 'Delete' }}
                                             </button>
                                         </form>
                                     @else
-                                        <form method="POST" action="{{ route('favorites.store', $service->id) }}" style="margin:0;">
-                                            @csrf
-                                            <button type="submit" class="service-btn-secondary">
-                                                {{ $isArabic ? 'إضافة للمفضلة' : 'Add to favorites' }}
-                                            </button>
-                                        </form>
-                                    @endif
+                                        <a href="{{ route('services.show', $service) }}" class="service-btn-secondary">
+                                            {{ $isArabic ? 'التفاصيل' : 'Details' }}
+                                        </a>
 
-                                    <a href="{{ route('services.edit', $service) }}" class="service-btn-secondary">
-                                        {{ $isArabic ? 'تعديل' : 'Edit' }}
-                                    </a>
+                                        <a href="{{ route('services.show', $service) }}" class="service-btn-primary">
+                                            {{ $isArabic ? 'إرسال طلب' : 'Send request' }}
+                                        </a>
+
+                                        @if (in_array($service->id, $favoriteIds))
+                                            <form method="POST" action="{{ route('favorites.destroy', $service->id) }}" style="margin:0;">
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit" class="service-btn-secondary">
+                                                    {{ $isArabic ? 'إزالة من المفضلة' : 'Remove favorite' }}
+                                                </button>
+                                            </form>
+                                        @else
+                                            <form method="POST" action="{{ route('favorites.store', $service->id) }}" style="margin:0;">
+                                                @csrf
+
+                                                <button type="submit" class="service-btn-secondary">
+                                                    {{ $isArabic ? 'إضافة للمفضلة' : 'Add to favorites' }}
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                         </article>

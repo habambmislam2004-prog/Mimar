@@ -4,6 +4,7 @@ namespace App\Services\Web;
 
 use App\Models\User;
 use App\Enums\SystemRole;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserWebService
@@ -21,7 +22,7 @@ class UserWebService
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'],
-            'password' => !empty($data['password']) ? bcrypt($data['password']) : null,
+            'password' => bcrypt($data['password']),
             'locale' => $data['locale'] ?? 'ar',
             'is_active' => (bool) $data['is_active'],
             'account_type' => $data['account_type'],
@@ -34,6 +35,12 @@ class UserWebService
 
     public function update(User $user, array $data): User
     {
+        if ($user->hasRole(SystemRole::SUPER_ADMIN->value)) {
+            throw ValidationException::withMessages([
+                'account_type' => __('messages.not_allowed_action'),
+            ]);
+        }
+
         $payload = [
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
@@ -43,7 +50,7 @@ class UserWebService
             'account_type' => $data['account_type'],
         ];
 
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $payload['password'] = bcrypt($data['password']);
         }
 
@@ -53,8 +60,20 @@ class UserWebService
         return $user->refresh();
     }
 
-    public function delete(User $user): void
+    public function delete(User $user, ?User $authUser = null): void
     {
+        if ($user->hasRole(SystemRole::SUPER_ADMIN->value)) {
+            throw ValidationException::withMessages([
+                'user' => __('messages.not_allowed_action'),
+            ]);
+        }
+
+        if ($authUser && $authUser->id === $user->id) {
+            throw ValidationException::withMessages([
+                'user' => __('messages.not_allowed_action'),
+            ]);
+        }
+
         $user->delete();
     }
 }

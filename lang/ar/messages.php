@@ -98,6 +98,13 @@ return [
     'final_qty' => 'الكمية النهائية',
     'price' => 'السعر',
     'total' => 'الإجمالي',
+    'created_successfully' => 'تمت الإضافة بنجاح',
+    'updated_successfully' => 'تم التعديل بنجاح',
+    'deleted_successfully' => 'تم الحذف بنجاح',
+     'order_accepted_successfully' => 'تم قبول الطلب بنجاح',
+    'order_rejected_successfully' => 'تم رفض الطلب بنجاح',
+    'order_not_pending' => 'لا يمكن تعديل هذا الطلب لأنه لم يعد قيد الانتظار',
+    'not_allowed_action' => 'هذا الإجراء غير مسموح.',
 
     'attributes' => [
         'name' => 'الاسم',

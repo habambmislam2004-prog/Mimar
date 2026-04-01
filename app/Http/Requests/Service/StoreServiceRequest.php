@@ -21,6 +21,9 @@ class StoreServiceRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
 
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+
             'dynamic_fields' => ['nullable', 'array'],
             'dynamic_fields.*' => ['nullable'],
         ];
@@ -35,6 +38,8 @@ class StoreServiceRequest extends FormRequest
             'name_en' => __('messages.attributes.name_en'),
             'description' => __('messages.attributes.description'),
             'price' => __('messages.attributes.price'),
+            'latitude' => __('messages.attributes.latitude'),
+            'longitude' => __('messages.attributes.longitude'),
             'dynamic_fields' => 'الحقول الديناميكية',
         ];
     }

@@ -26,6 +26,8 @@ class Service extends Model
         'approved_at',
         'rejected_by',
         'rejected_at',
+        'latitude',
+        'longitude',
     ];
 
     protected function casts(): array
