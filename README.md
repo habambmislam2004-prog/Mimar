@@ -1,23 +1,3 @@
-# Mi'mar Platform  
-## Team
-Product owner :eslam & diana 
-- Developer: [eslam]
-- Tester : [diana]
-
-## Week 1 Plan
-- [x] Write 5 User Stories
-- [x] Set up Trello board
-- [x] Link Trello → GitHub
-
-## Tech Stack (Short Version)
-Laravel / PHP / MySQL / JavaScript
-
-## Trello Board
-[https://trello.com/b/ZFaul6Jb/mimar-project]
-## Real Estate Services and Smart Estimation System
-# Mimar Project (UniTask)
-**Course:** Software Engineering 3
-**Instructor:** Eng. Lana Alhasn
 
 ## Team
 - Name: [eslam habambm]
