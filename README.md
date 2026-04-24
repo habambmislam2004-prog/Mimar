@@ -1,4 +1,19 @@
 # Mi'mar Platform  
+## Team
+Product owner :eslam & diana 
+- Developer: [eslam]
+- Tester : [diana]
+
+## Week 1 Plan
+- [x] Write 5 User Stories
+- [x] Set up Trello board
+- [x] Link Trello → GitHub
+
+## Tech Stack (Short Version)
+Laravel / PHP / MySQL / JavaScript
+
+## Trello Board
+[Put your Trello link here]
 ## Real Estate Services and Smart Estimation System
 
 ## Project Overview
