@@ -15,7 +15,22 @@ Laravel / PHP / MySQL / JavaScript
 ## Trello Board
 [https://trello.com/b/ZFaul6Jb/mimar-project]
 ## Real Estate Services and Smart Estimation System
+# Mimar Project (UniTask)
+**Course:** Software Engineering 3
+**Instructor:** Eng. Lana Alhasn
 
+## Team
+- Name: [eslam habambm]
+- University Email: [islamhabambm2004@gmail.com]
+
+## Project Links
+- [Jira Board](https://habambmislam2004.atlassian.net/jira/software/projects/KAN/list?jql=project%20%3D%20KAN%20ORDER%20BY%20cf%5B10019%5D%20ASC)
+- [GitHub Repository](https://github.com/habambmislam2004-prog/Mimar)
+
+## Deliverable #1 Requirements
+- [x] 5 User Stories with Acceptance Criteria.
+- [x] Traceability between Jira and GitHub.
+- [x] GitHub Repository Structure (README, .gitignore, index.html).
 ## Project Overview
 Mi'mar is a digital platform developed to organize and improve the real estate services sector by connecting service providers with clients inside a structured and supervised environment.  
 The project aims to replace traditional and unorganized communication methods with a reliable system that supports account verification, business account approval, service review, order management, ratings, favorites, reports, notifications, and direct communication between users and service providers. The system description and functional requirements also specify these core workflows, including business account review, service approval, browsing and filtering, ordering, ratings, favorites, reports, and administrative control. fileciteturn0file0L1-L17 fileciteturn0file0L56-L71
