@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Web\Service;
+namespace App\Http\Requests\Service;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateServiceWebRequest extends FormRequest
+class UpdateServiceRequest extends FormRequest
 {
     public function authorize(): bool
     {

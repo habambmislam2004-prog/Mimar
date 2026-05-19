@@ -53,7 +53,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
 
         Route::post('/admin/login', [AuthController::class, 'adminLogin']);
-
+         Route::post('user-login', [AuthController::class, 'userLogin']);
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/me', [AuthController::class, 'me']);
             Route::post('/logout', [AuthController::class, 'logout']);
@@ -83,26 +83,20 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum'])->get('/home', [HomeController::class, 'index']);
 
     /*
-    |--------------------------------------------------------------------------
-    | Cities
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('cities')->group(function () {
-        Route::middleware(['auth:sanctum', 'permission:view-cities'])
-            ->get('/', [CityController::class, 'index']);
+| Cities
+*/
+Route::prefix('cities')->group(function () {
 
-        Route::middleware(['auth:sanctum', 'permission:create-cities'])
-            ->post('/', [CityController::class, 'store']);
+    Route::get('/', [CityController::class, 'index']);
+    Route::get('/{city}', [CityController::class, 'show']);
 
-        Route::middleware(['auth:sanctum', 'permission:view-cities'])
-            ->get('/{city}', [CityController::class, 'show']);
-
-        Route::middleware(['auth:sanctum', 'permission:edit-cities'])
-            ->put('/{city}', [CityController::class, 'update']);
-
-        Route::middleware(['auth:sanctum', 'permission:delete-cities'])
-            ->delete('/{city}', [CityController::class, 'destroy']);
+    
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/', [CityController::class, 'store'])->middleware('permission:create-cities');
+        Route::put('/{city}', [CityController::class, 'update'])->middleware('permission:edit-cities');
+        Route::delete('/{city}', [CityController::class, 'destroy'])->middleware('permission:delete-cities');
     });
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -126,49 +120,37 @@ Route::prefix('v1')->group(function () {
             ->delete('/{businessActivityType}', [BusinessActivityTypeController::class, 'destroy']);
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Categories
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('categories')->group(function () {
-        Route::middleware(['auth:sanctum', 'permission:view-categories'])
-            ->get('/', [CategoryController::class, 'index']);
+   /*
+| Categories
+*/
+Route::prefix('categories')->group(function () {
 
-        Route::middleware(['auth:sanctum', 'permission:create-categories'])
-            ->post('/', [CategoryController::class, 'store']);
+    Route::get('/', [CategoryController::class, 'index']);
+    Route::get('/{category}', [CategoryController::class, 'show']);
 
-        Route::middleware(['auth:sanctum', 'permission:view-categories'])
-            ->get('/{category}', [CategoryController::class, 'show']);
-
-        Route::middleware(['auth:sanctum', 'permission:edit-categories'])
-            ->put('/{category}', [CategoryController::class, 'update']);
-
-        Route::middleware(['auth:sanctum', 'permission:delete-categories'])
-            ->delete('/{category}', [CategoryController::class, 'destroy']);
+    
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/', [CategoryController::class, 'store'])->middleware('permission:create-categories');
+        Route::put('/{category}', [CategoryController::class, 'update'])->middleware('permission:edit-categories');
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])->middleware('permission:delete-categories');
     });
+});
 
     /*
-    |--------------------------------------------------------------------------
-    | Subcategories
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('subcategories')->group(function () {
-        Route::middleware(['auth:sanctum', 'permission:view-subcategories'])
-            ->get('/', [SubcategoryController::class, 'index']);
+| Subcategories
+*/
+Route::prefix('subcategories')->group(function () {
+    
+    Route::get('/', [SubcategoryController::class, 'index']);
+    Route::get('/{subcategory}', [SubcategoryController::class, 'show']);
 
-        Route::middleware(['auth:sanctum', 'permission:create-subcategories'])
-            ->post('/', [SubcategoryController::class, 'store']);
 
-        Route::middleware(['auth:sanctum', 'permission:view-subcategories'])
-            ->get('/{subcategory}', [SubcategoryController::class, 'show']);
-
-        Route::middleware(['auth:sanctum', 'permission:edit-subcategories'])
-            ->put('/{subcategory}', [SubcategoryController::class, 'update']);
-
-        Route::middleware(['auth:sanctum', 'permission:delete-subcategories'])
-            ->delete('/{subcategory}', [SubcategoryController::class, 'destroy']);
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/', [SubcategoryController::class, 'store'])->middleware('permission:create-subcategories');
+        Route::put('/{subcategory}', [SubcategoryController::class, 'update'])->middleware('permission:edit-subcategories');
+        Route::delete('/{subcategory}', [SubcategoryController::class, 'destroy'])->middleware('permission:delete-subcategories');
     });
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -204,10 +186,10 @@ Route::prefix('v1')->group(function () {
     | Services - User
     |--------------------------------------------------------------------------
     */
-    Route::prefix('business-accounts/{businessAccount}/services')->middleware(['auth:sanctum'])->group(function () {
-        Route::get('/', [ServiceController::class, 'index']);
-        Route::post('/', [ServiceController::class, 'store']);
-    });
+   Route::prefix('business-accounts/{businessAccount}/services')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [ServiceController::class, 'index']);
+    Route::post('/', [ServiceController::class, 'store']); 
+});
 
     Route::prefix('services')->middleware(['auth:sanctum'])->group(function () {
         Route::put('/{service}', [ServiceController::class, 'update']);

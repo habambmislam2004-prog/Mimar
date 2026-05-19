@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 ## Team
 - Name: [eslam habambm]
@@ -6,6 +7,11 @@
 ## Project Links
 - [Jira Board](https://habambmislam2004.atlassian.net/jira/software/projects/KAN/list?jql=project%20%3D%20KAN%20ORDER%20BY%20cf%5B10019%5D%20ASC)
 - [GitHub Repository](https://github.com/habambmislam2004-prog/Mimar)
+=======
+# Mi'mar Platform  
+# Mimar Project
+## Real Estate Services and Smart Estimation System
+>>>>>>> 122f019 (Fix vite manifest and add build folder)
 
 ## Deliverable #1 Requirements
 - [x] 5 User Stories with Acceptance Criteria.

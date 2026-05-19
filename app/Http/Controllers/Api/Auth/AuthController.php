@@ -90,6 +90,7 @@ class AuthController extends ApiController
 
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
+        $request->all();
         $validated = $request->validated();
         $normalizedPhone = $this->normalizePhone($validated['phone']);
 
@@ -139,6 +140,61 @@ class AuthController extends ApiController
         ], __('messages.logged_in_successfully'));
     }
 
+
+     public function userLogin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'password' => 'required|string',
+        ]);
+
+        $credentials = $request->only('email', 'phone', 'password');
+
+        $user = User::where('email', $credentials['email'] ?? null)
+                      ->orWhere('phone', $credentials['phone'] ?? null)
+                      ->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'identifier' => [__('messages.invalid_credentials')],
+            ]);
+        }
+
+        // التحقق من أن المستخدم لديه دور USER
+        if (! $user->hasRole(SystemRole::USER->value)) {
+            throw ValidationException::withMessages([
+                'identifier' => [__('messages.user_login_only')],
+            ]);
+        }
+
+        // التحقق من أن الحساب نشط
+        if (! $user->is_active) {
+            throw ValidationException::withMessages([
+                'identifier' => [__('messages.account_inactive')],
+            ]);
+        }
+
+        // التحقق من كلمة المرور
+        if (! Hash::check($credentials['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'identifier' => [__('messages.invalid_credentials')],
+            ]);
+        }
+
+        // تحديث آخر وقت لتسجيل الدخول
+        $user->update(['last_login_at' => now()]);
+
+        // إنشاء توكن جديد للمستخدم
+        $token = $user->createToken('user-api-token')->plainTextToken;
+
+        return $this->successResponse([
+            new UserResource($user),
+            'token' => $token,
+         ], __('messages.logged_in_successfully'),
+            200
+        );
+    }
     public function adminLogin(AdminLoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
