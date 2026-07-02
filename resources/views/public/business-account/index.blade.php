@@ -776,7 +776,7 @@
             </div>
         </section>
 
-        @if (! $businessAccounts->count())
+        @if (! $businessAccounts->count() && ! $showCreateForm)
             <section class="ba-empty-card">
                 <div class="ba-head" style="margin-bottom: 0;">
                     <h2 class="ba-title">{{ $isArabic ? 'لا يوجد طلب حساب أعمال حتى الآن' : 'No business account request yet' }}</h2>
@@ -810,7 +810,8 @@
                 </div>
             </section>
         @else
-            <section class="ba-layout">
+            <section class="ba-layout" @if (! $businessAccounts->count()) style="grid-template-columns: 1fr;" @endif>
+                @if ($businessAccounts->count())
                 <div class="ba-card">
                     <div class="ba-head">
                         <h2 class="ba-title">{{ $isArabic ? 'طلبات حساب الأعمال' : 'Business account requests' }}</h2>
@@ -854,8 +855,10 @@
                         @endforeach
                     </div>
                 </div>
+                @endif
 
                 <div style="display:grid; gap:20px;">
+                    @if ($businessAccounts->count())
                     <div class="ba-detail-card">
                         <div class="ba-head">
                             <h2 class="ba-title">{{ $isArabic ? 'تفاصيل الطلب المختار' : 'Selected request details' }}</h2>
@@ -980,6 +983,7 @@
                             </div>
                         @endif
                     </div>
+                    @endif
 
                     @if ($showCreateForm || $showEditForm)
                         <div class="ba-form-card">
@@ -997,7 +1001,8 @@
 
                             <form method="POST"
                                   action="{{ $showEditForm && $formBusiness ? route('business-account.update', $formBusiness->id) : route('business-account.store') }}"
-                                  enctype="multipart/form-data">
+                                  enctype="multipart/form-data"
+                                  data-ba-form>
                                 @csrf
                                 @if ($showEditForm && $formBusiness)
                                     @method('PUT')
@@ -1173,7 +1178,11 @@
                                 </div>
 
                                 <div class="ba-form-actions">
-                                    <button type="submit" class="ba-btn">
+                                    <button type="submit" class="ba-btn" data-ba-submit
+                                            data-label-idle="{{ $showEditForm
+                                                ? ($isArabic ? 'حفظ التعديلات' : 'Save changes')
+                                                : ($isArabic ? 'إرسال الطلب' : 'Submit request') }}"
+                                            data-label-busy="{{ $isArabic ? 'جاري الإرسال...' : 'Submitting...' }}">
                                         {{ $showEditForm
                                             ? ($isArabic ? 'حفظ التعديلات' : 'Save changes')
                                             : ($isArabic ? 'إرسال الطلب' : 'Submit request') }}
@@ -1307,5 +1316,23 @@
                             }, 300);
                           });
                      </script>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const form = document.querySelector('[data-ba-form]');
+                            if (!form) return;
+
+                            const submitBtn = form.querySelector('[data-ba-submit]');
+                            if (!submitBtn) return;
+
+                            form.addEventListener('submit', function () {
+                                submitBtn.disabled = true;
+                                submitBtn.style.opacity = '0.7';
+                                submitBtn.style.cursor = 'wait';
+                                const busy = submitBtn.dataset.labelBusy;
+                                if (busy) submitBtn.textContent = busy;
+                            });
+                        });
+                    </script>
          @endif
 @endsection
