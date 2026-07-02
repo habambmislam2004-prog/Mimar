@@ -781,7 +781,7 @@
                 <div class="ba-head" style="margin-bottom: 0;">
                     <h2 class="ba-title">{{ $isArabic ? 'لا يوجد طلب حساب أعمال حتى الآن' : 'No business account request yet' }}</h2>
 
-                    <a href="{{ route('business-account.index', ['new' => 1]) }}" class="ba-btn">
+                    <a href="{{ route('business-account.create') }}" class="ba-btn">
                         {{ $isArabic ? 'قدّم طلب حساب أعمال' : 'Submit business account request' }}
                     </a>
                 </div>
@@ -815,7 +815,7 @@
                     <div class="ba-head">
                         <h2 class="ba-title">{{ $isArabic ? 'طلبات حساب الأعمال' : 'Business account requests' }}</h2>
 
-                        <a href="{{ route('business-account.index', ['new' => 1]) }}" class="ba-btn">
+                        <a href="{{ route('business-account.create') }}" class="ba-btn">
                             {{ $isArabic ? 'طلب جديد' : 'New request' }}
                         </a>
                     </div>
@@ -1307,5 +1307,5 @@
                             }, 300);
                           });
                      </script>
-                @endif
+         @endif
 @endsection

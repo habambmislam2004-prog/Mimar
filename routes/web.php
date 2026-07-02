@@ -65,6 +65,7 @@ Route::get('/currency/{currency}', function ($currency) {
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
+
     Route::get('/login', [OtpLoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [OtpLoginController::class, 'sendCode'])->name('otp.send');
 
@@ -74,10 +75,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
 
-    Route::get('/dashboard', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/dashboard', [AdminLoginController::class, 'login'])->name('admin.login.submit');
 });
 
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])
+    ->name('admin.login');
+
+Route::post('/admin/login', [AdminLoginController::class, 'login'])
+    ->name('admin.login.submit');
 /*
 |--------------------------------------------------------------------------
 | Authenticated User Routes

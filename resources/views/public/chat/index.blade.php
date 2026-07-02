@@ -245,8 +245,9 @@
             display: grid;
             gap: 12px;
             max-height: 520px;
-            overflow: auto;
+            overflow-y: auto;
             padding-right: 4px;
+            scroll-behavior: smooth;
         }
 
         .message-bubble {
@@ -255,6 +256,7 @@
             border-radius: 20px;
             font-size: 14px;
             line-height: 1.9;
+            position: relative;
         }
 
         .message-bubble.mine {
@@ -312,11 +314,19 @@
     </style>
 
     <div class="chat-shell">
+
         <section class="chat-hero">
             <div class="chat-hero-content">
+
                 <div>
-                    <span class="chat-kicker">{{ $isArabic ? 'المحادثات' : 'Conversations' }}</span>
-                    <h1 class="chat-title">{{ $isArabic ? 'محادثاتك داخل المنصة' : 'Your conversations on the platform' }}</h1>
+                    <span class="chat-kicker">
+                        {{ $isArabic ? 'المحادثات' : 'Conversations' }}
+                    </span>
+
+                    <h1 class="chat-title">
+                        {{ $isArabic ? 'محادثاتك داخل المنصة' : 'Your conversations on the platform' }}
+                    </h1>
+
                     <p class="chat-copy">
                         {{ $isArabic
                             ? 'أنشئ محادثة جديدة، تابع الرسائل، وواصل التواصل مع المستخدمين داخل واجهة أوضح وأرتب.'
@@ -326,41 +336,67 @@
 
                 <div class="chat-hero-side">
                     <h3>{{ $isArabic ? 'ملخص سريع' : 'Quick summary' }}</h3>
+
                     <div class="chat-hero-list">
+
                         <div class="chat-hero-item">
                             <span>{{ $isArabic ? 'عدد المحادثات' : 'Conversations count' }}</span>
                             <strong>{{ $conversations->count() }}</strong>
                         </div>
+
                         <div class="chat-hero-item">
                             <span>{{ $isArabic ? 'المحادثة الحالية' : 'Current chat' }}</span>
                             <strong>{{ $selectedConversation ? '#' . $selectedConversation->id : '—' }}</strong>
                         </div>
+
                     </div>
                 </div>
+
             </div>
         </section>
 
         <section class="chat-layout">
+
+            <!-- SIDEBAR -->
             <div class="chat-card">
+
                 <div class="chat-head">
                     <h2>{{ $isArabic ? 'ابدأ محادثة' : 'Start conversation' }}</h2>
                 </div>
 
-                <form method="POST" action="{{ route('chat.conversations.store') }}" class="chat-form">
+                <form method="POST"
+                      action="{{ route('chat.conversations.store') }}"
+                      class="chat-form">
+
                     @csrf
 
-                    <select name="other_user_id" class="chat-select" required>
-                        <option value="">{{ $isArabic ? 'اختر مستخدمًا' : 'Select a user' }}</option>
+                    <select name="other_user_id"
+                            class="chat-select"
+                            required>
+
+                        <option value="">
+                            {{ $isArabic ? 'اختر مستخدماً...' : 'Select a user...' }}
+                        </option>
+
                         @foreach ($otherUsers as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }} — {{ $user->phone ?? $user->email ?? '—' }}</option>
+
+                            <option value="{{ $user->id }}">
+                                {{ $user->name }}
+                            </option>
+
                         @endforeach
+
                     </select>
 
-                    <input type="number" name="service_id" class="chat-input" placeholder="{{ $isArabic ? 'رقم الخدمة (اختياري)' : 'Service ID (optional)' }}">
+                    <input type="number"
+                           name="service_id"
+                           class="chat-input"
+                           placeholder="{{ $isArabic ? 'رقم الخدمة (اختياري)' : 'Service ID (optional)' }}">
 
                     <button type="submit" class="chat-btn">
                         {{ $isArabic ? 'إنشاء محادثة' : 'Create conversation' }}
                     </button>
+
                 </form>
 
                 <div class="chat-head" style="margin-top:10px;">
@@ -368,73 +404,363 @@
                 </div>
 
                 @if ($conversations->count())
+
                     <div class="chat-list">
+
                         @foreach ($conversations as $conversation)
+
                             @php
                                 $party = $otherParty($conversation);
                             @endphp
 
                             <a href="{{ route('chat.index', ['conversation' => $conversation->id]) }}"
                                class="chat-item {{ $selectedConversation && $selectedConversation->id === $conversation->id ? 'active' : '' }}">
-                                <strong>{{ $party->name ?? ($isArabic ? 'مستخدم' : 'User') }}</strong>
+
+                                <strong>
+                                    {{ $party->name ?? ($isArabic ? 'مستخدم' : 'User') }}
+                                </strong>
+
                                 <span>
-                                    {{ $isArabic ? 'الخدمة:' : 'Service:' }}
-                                    {{ $conversation->service->name_ar ?? $conversation->service->name_en ?? '—' }}
+                                    {{ $conversation->lastMessage->body ?? 'No messages yet' }}
                                 </span>
-                                <span>
-                                    {{ $conversation->lastMessage->body ?? ($isArabic ? 'لا توجد رسائل بعد' : 'No messages yet') }}
-                                </span>
+
                             </a>
+
                         @endforeach
+
                     </div>
-                @else
-                    <div class="chat-empty">
-                        {{ $isArabic ? 'لا توجد محادثات حتى الآن.' : 'No conversations yet.' }}
-                    </div>
+
                 @endif
+
             </div>
 
+            <!-- CHAT -->
             <div class="chat-card">
+
                 @if ($selectedConversation)
+
                     @php
                         $party = $otherParty($selectedConversation);
                     @endphp
 
+                    <!-- HEADER -->
                     <div class="chat-head">
-                        <h2>{{ $party->name ?? ($isArabic ? 'مستخدم' : 'User') }}</h2>
-                        <span>{{ $selectedConversation->service->name_ar ?? $selectedConversation->service->name_en ?? '—' }}</span>
+
+                        <div>
+
+                            <h2 style="margin-bottom:6px;">
+                                {{ $party->name ?? ($isArabic ? 'مستخدم' : 'User') }}
+                            </h2>
+
+                            <div id="status-container-{{ $party->id }}">
+
+                              @if($party->last_seen_at && \Carbon\Carbon::parse($party->last_seen_at)->diffInMinutes(now()) < 5)
+
+                                    <span style="color:#22c55e;font-size:13px;font-weight:700;">
+                                        ● {{ $isArabic ? 'متصل الآن' : 'Online now' }}
+                                    </span>
+
+                                @else
+
+                                    <span style="color:#64748b;font-size:13px;">
+                                        {{ $isArabic ? 'غير متصل' : 'Offline' }}
+                                    </span>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                        <span>
+                            {{ $selectedConversation->service->name_ar ?? $selectedConversation->service->name_en ?? '—' }}
+                        </span>
+
                     </div>
 
-                    @if ($selectedConversation->messages && $selectedConversation->messages->count())
-                        <div class="message-list">
-                            @foreach ($selectedConversation->messages->sortBy('created_at') as $message)
-                                <div class="message-bubble {{ $message->sender_id === auth()->id() ? 'mine' : 'other' }}">
-                                    <div>{{ $message->body }}</div>
-                                    <div class="message-meta">
-                                        {{ $message->sender->name ?? '—' }} • {{ optional($message->created_at)->format('Y-m-d H:i') }}
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="chat-empty">
-                            {{ $isArabic ? 'لا توجد رسائل بعد في هذه المحادثة.' : 'There are no messages in this conversation yet.' }}
-                        </div>
-                    @endif
+                    <!-- MESSAGES -->
+                    <div id="message-list-container" class="message-list">
 
-                    <form method="POST" action="{{ route('chat.messages.store', $selectedConversation->id) }}" class="chat-form" style="margin-top:18px;">
+                        @foreach ($selectedConversation->messages->sortBy('created_at') as $message)
+
+                            <div class="message-bubble {{ $message->sender_id === auth()->id() ? 'mine' : 'other' }}">
+
+                                @if($message->body)
+                                    <div>{{ $message->body }}</div>
+                                @endif
+
+                                @if($message->file_path)
+
+                                    <div style="margin-top:10px;">
+
+                                        <a href="{{ asset('storage/' . $message->file_path) }}"
+                                           target="_blank"
+                                           style="font-weight:bold;color:inherit;text-decoration:underline;">
+
+                                            📎 {{ $message->file_name }}
+
+                                        </a>
+
+                                    </div>
+
+                                @endif
+
+                                <div class="message-meta">
+                                    {{ $message->sender->name ?? '—' }}
+                                    •
+                                    {{ optional($message->created_at)->format('Y-m-d H:i') }}
+                                </div>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                    <!-- FORM -->
+                    <form id="realtime-chat-form"
+                          method="POST"
+                          enctype="multipart/form-data"
+                          action="{{ route('chat.messages.store', $selectedConversation->id) }}"
+                          class="chat-form"
+                          style="margin-top:18px;">
+
                         @csrf
-                        <textarea name="body" class="chat-textarea" placeholder="{{ $isArabic ? 'اكتب رسالتك هنا...' : 'Write your message here...' }}" required>{{ old('body') }}</textarea>
-                        <button type="submit" class="chat-btn">
-                            {{ $isArabic ? 'إرسال الرسالة' : 'Send message' }}
-                        </button>
+
+                        <div style="display:flex;align-items:flex-end;gap:10px;">
+
+                            <!-- FILE -->
+                            <label for="file-input"
+                                   style="
+                                        cursor:pointer;
+                                        width:50px;
+                                        height:50px;
+                                        border-radius:50%;
+                                        background:#f1f5f9;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        border:1px solid rgba(15,23,42,.08);
+                                        flex-shrink:0;
+                                   ">
+
+                                📎
+
+                                <input type="file"
+                                       id="file-input"
+                                       name="attachment"
+                                       style="display:none;"
+                                       onchange="showFileName(this)">
+
+                            </label>
+
+                            <!-- TEXT -->
+                            <textarea id="chat-message-input"
+                                      name="body"
+                                      class="chat-textarea"
+                                      placeholder="{{ $isArabic ? 'اكتب رسالتك هنا...' : 'Write your message here...' }}">{{ old('body') }}</textarea>
+
+                            <!-- SEND -->
+                            <button type="submit"
+                                    class="chat-btn">
+                                {{ $isArabic ? 'إرسال الرسالة' : 'Send message' }}
+                            </button>
+
+                        </div>
+
+                        <small id="file-name-display"
+                               style="display:block;color:#16a34a;font-weight:700;">
+                        </small>
+
                     </form>
+
                 @else
+
                     <div class="chat-empty">
                         {{ $isArabic ? 'اختر محادثة من القائمة أو أنشئ واحدة جديدة.' : 'Select a conversation from the list or create a new one.' }}
                     </div>
+
                 @endif
+
             </div>
+
         </section>
+
     </div>
+
+@if($selectedConversation)
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const conversationId = {{ $selectedConversation->id }};
+
+    const authId = {{ auth()->id() }};
+
+    const messageList =
+        document.getElementById('message-list-container');
+
+    const chatForm =
+        document.getElementById('realtime-chat-form');
+
+    const messageInput =
+        document.getElementById('chat-message-input');
+
+    function scrollToBottom() {
+
+        messageList.scrollTop =
+            messageList.scrollHeight;
+    }
+
+    scrollToBottom();
+
+    // FILE NAME
+    window.showFileName = function(input) {
+
+        if(input.files.length > 0){
+
+            document.getElementById('file-name-display')
+                .innerText = '📎 ' + input.files[0].name;
+        }
+    }
+
+    // ONLINE STATUS
+    if(window.Echo){
+
+        window.Echo.join('chat.presence')
+
+            .here((users) => {
+
+                users.forEach(user => {
+                    updateUserStatus(user.id, true);
+                });
+            })
+
+            .joining((user) => {
+                updateUserStatus(user.id, true);
+            })
+
+            .leaving((user) => {
+                updateUserStatus(user.id, false);
+            });
+
+        // REALTIME MESSAGES
+        window.Echo.private(`conversation.${conversationId}`)
+
+            .listen('.message.sent', (e) => {
+
+                const isMine =
+                    e.sender_id === authId;
+
+                const fileHtml = e.file_path
+                    ? `
+                        <div style="margin-top:10px;">
+                            <a href="/storage/${e.file_path}"
+                               target="_blank"
+                               style="font-weight:bold;color:inherit;text-decoration:underline;">
+
+                               📎 ${e.file_name}
+
+                            </a>
+                        </div>
+                    `
+                    : '';
+
+                const messageHtml = `
+
+                    <div class="message-bubble ${isMine ? 'mine' : 'other'}">
+
+                        ${e.body ? `<div>${e.body}</div>` : ''}
+
+                        ${fileHtml}
+
+                        <div class="message-meta">
+
+                            ${e.sender.name}
+
+                            •
+
+                            ${new Date(e.created_at).toLocaleString()}
+
+                        </div>
+
+                    </div>
+                `;
+
+                messageList.insertAdjacentHTML(
+                    'beforeend',
+                    messageHtml
+                );
+
+                scrollToBottom();
+            });
+    }
+
+    function updateUserStatus(userId, isOnline) {
+
+        const container =
+            document.getElementById(`status-container-${userId}`);
+
+        if(!container) return;
+
+        if(isOnline){
+
+            container.innerHTML = `
+                <span style="color:#22c55e;font-size:13px;font-weight:700;">
+                    ● متصل الآن
+                </span>
+            `;
+
+        }else{
+
+            container.innerHTML = `
+                <span style="color:#64748b;font-size:13px;">
+                    غير متصل
+                </span>
+            `;
+        }
+    }
+
+    // SEND MESSAGE
+    chatForm.addEventListener('submit', function (e) {
+
+        e.preventDefault();
+
+        const formData = new FormData(chatForm);
+
+        fetch(chatForm.action, {
+
+            method: 'POST',
+
+            body: formData,
+
+            headers: {
+
+                'X-Requested-With': 'XMLHttpRequest',
+
+                'Accept': 'application/json',
+            }
+
+        })
+        .then(response => response.json())
+
+        .then(data => {
+
+            messageInput.value = '';
+
+            document.getElementById('file-input').value = '';
+
+            document.getElementById('file-name-display').innerText = '';
+        })
+
+        .catch(error => console.error(error));
+    });
+
+});
+
+</script>
+
+@endif
+
 @endsection

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'locale',
         'is_active',
         'last_login_at',
+        'last_seen_at',
         'account_type',
     ];
 
@@ -74,4 +75,12 @@ public function sentMessages(): HasMany
   {
     return $this->hasMany(Message::class, 'sender_id');
    } 
+   public function isOnline()
+{
+    return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
+}
+public function routeNotificationForFcm()
+{
+    return $this->deviceTokens()->pluck('token')->toArray();
+}
 }

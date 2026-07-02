@@ -14,7 +14,27 @@ class StoreMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => ['required', 'string', 'max:5000'],
+
+            // النص اختياري
+            'body' => 'nullable|string',
+
+            // الملف اختياري
+            'attachment' => 'nullable|file|max:20480',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+
+            // لازم يكون يا نص يا ملف
+            if (!$this->body && !$this->hasFile('attachment')) {
+
+                $validator->errors()->add(
+                    'body',
+                    'يجب كتابة رسالة أو اختيار ملف'
+                );
+            }
+        });
     }
 }

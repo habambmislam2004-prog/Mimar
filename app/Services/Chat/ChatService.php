@@ -64,23 +64,29 @@ class ChatService
             ->get();
     }
 
-   public function sendMessage(User $user, Conversation $conversation, array $data): Message
+   public function sendMessage(User $sender, array $data): Message
 {
-    $this->ensureParticipant($user, $conversation);
+    $messageData = [
+        'conversation_id' => $data['conversation_id'],
+        'sender_id' => $sender->id,
+        'body' => $data['body'] ?? null,
+        'type' => $data['type'] ?? 'text',
+    ];
 
-    $message = Message::query()->create([
-        'conversation_id' => $conversation->id,
-        'sender_id' => $user->id,
-        'body' => $data['body'],
-    ]);
+    if (isset($data['file']) && $data['file']->isValid()) {
+        $file = $data['file'];
+        $path = $file->store('chat_files', 'public');
+        $messageData['file_path'] = $path;
+        $messageData['file_name'] = $file->getClientOriginalName();
+        $messageData['type'] = str_contains($file->getMimeType(), 'image') ? 'image' : 'file';
+    }
 
-    $conversation->update([
-        'last_message_id' => $message->id,
-    ]);
+    $message = Message::create($messageData);
+   
+    $message->conversation->touch();
 
-    $message->load('sender');
-
-    event(new MessageSent($message));
+    
+    broadcast(new MessageSent($message))->toOthers();
 
     return $message;
 }

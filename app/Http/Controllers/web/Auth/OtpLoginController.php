@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Enums\SystemRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserOtp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -20,70 +22,112 @@ class OtpLoginController extends Controller
     }
 
     public function sendCode(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'phone' => ['required', 'string', 'max:30'],
+{
+    $validated = $request->validate([
+        'phone' => ['required', 'string', 'max:30'],
+    ]);
+
+    Log::info('OTP login started', [
+        'entered_phone' => $request->phone,
+    ]);
+
+    $normalizedPhone = $this->normalizePhone($validated['phone']);
+
+    Log::info('Phone normalized', [
+        'normalized_phone' => $normalizedPhone,
+    ]);
+
+    $allUsers = User::query()->get(['id', 'name', 'phone', 'email']);
+
+    $user = $allUsers->first(function ($user) use ($normalizedPhone) {
+        return $this->normalizePhone($user->phone) === $normalizedPhone;
+    });
+
+    Log::info('Matched user result', [
+        'user_found' => $user ? true : false,
+        'user_id' => $user?->id,
+        'user_name' => $user?->name,
+        'user_phone' => $user?->phone,
+        'user_email' => $user?->email,
+    ]);
+
+    if (! $user) {
+        throw ValidationException::withMessages([
+            'phone' => app()->getLocale() === 'ar'
+                ? 'هذا الرقم غير موجود.'
+                : 'This phone number does not exist.',
         ]);
+    }
 
-        Log::info('OTP login started', [
-            'entered_phone' => $request->phone,
-        ]);
+    /*
+    |--------------------------------------------------------------------------
+    | إنشاء OTP جديد
+    |--------------------------------------------------------------------------
+    */
 
-        $normalizedPhone = $this->normalizePhone($validated['phone']);
+    $code = rand(100000, 999999);
 
-        Log::info('Phone normalized', [
-            'normalized_phone' => $normalizedPhone,
-        ]);
+    UserOtp::create([
+        'user_id' => $user->id,
+        'code' => $code,
+        'expires_at' => now()->addMinutes(5),
+    ]);
 
-        $allUsers = User::query()->get(['id', 'name', 'phone', 'email']);
+    /*
+    |--------------------------------------------------------------------------
+    | إرسال OTP عبر UltraMsg
+    |--------------------------------------------------------------------------
+    */
 
-        $user = $allUsers->first(function ($user) use ($normalizedPhone) {
-            return $this->normalizePhone($user->phone) === $normalizedPhone;
-        });
+    $instanceId = env('ULTRAMSG_INSTANCE_ID');
+    $token = env('ULTRAMSG_TOKEN');
 
-        Log::info('Matched user result', [
-            'user_found' => $user ? true : false,
-            'user_id' => $user?->id,
-            'user_name' => $user?->name,
-            'user_phone' => $user?->phone,
-            'user_email' => $user?->email,
-        ]);
+    $to = $normalizedPhone;
 
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'phone' => app()->getLocale() === 'ar'
-                    ? 'هذا الرقم غير موجود.'
-                    : 'This phone number does not exist.',
-            ]);
-        }
+    $body = 'رمز التحقق الخاص بك هو: ' . $code . '. هذا الرمز صالح لمدة 5 دقائق.';
 
-        $code = '123456';
+    $response = Http::post("https://api.ultramsg.com/{$instanceId}/messages/chat", [
+        'token' => $token,
+        'to' => $to,
+        'body' => $body,
+    ]);
 
-        UserOtp::query()
-            ->where('user_id', $user->id)
-            ->whereNull('used_at')
-            ->delete();
+    Log::info('UltraMsg OTP send response', [
+        'response' => $response->json(),
+    ]);
 
-        UserOtp::query()->create([
-            'user_id' => $user->id,
-            'code' => $code,
-            'expires_at' => now()->addMinutes(5),
-        ]);
-
-        Log::info('OTP stored successfully', [
-            'user_id' => $user->id,
-            'code' => $code,
-        ]);
+    if ($response->successful() && $response->json('sent')) {
 
         return redirect()
-            ->route('otp.verify.form', ['phone' => $user->phone])
+            ->route('otp.verify.form', [
+                'phone' => $user->phone
+            ])
             ->with(
                 'success',
                 app()->getLocale() === 'ar'
-                    ? 'تم إرسال رمز التحقق. رمز التجربة هو 123456'
-                    : 'Verification code sent. Test code is 123456'
+                    ? 'تم إرسال رمز التحقق بنجاح إلى رقمك.'
+                    : 'Verification code sent successfully to your number.'
             );
     }
+    
+    if ($user->hasAnyRole([SystemRole::SUPER_ADMIN->value, SystemRole::ADMIN->value])) {
+        throw ValidationException::withMessages([
+            'phone' => 'حسابات الإدارة يجب أن تدخل عبر البريد الإلكتروني.',
+        ]);
+    }
+
+    Log::error('Failed to send OTP via UltraMsg', [
+        'response' => $response->json(),
+    ]);
+
+    return redirect()
+        ->back()
+        ->withErrors([
+            'phone' => app()->getLocale() === 'ar'
+                ? 'فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى.'
+                : 'Failed to send verification code. Please try again.',
+        ]);
+}
 
     public function showVerifyForm(Request $request): View
     {

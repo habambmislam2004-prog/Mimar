@@ -13,3 +13,6 @@ Broadcast::channel('conversation.{conversationId}', function ($user, int $conver
     return $conversation->user_one_id === $user->id
         || $conversation->user_two_id === $user->id;
 });
+Broadcast::channel('chat.presence', function ($user) {
+    return ['id' => $user->id, 'name' => $user->name];
+});

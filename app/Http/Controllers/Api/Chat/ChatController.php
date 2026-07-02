@@ -11,6 +11,9 @@ use App\Http\Requests\Chat\StoreMessageRequest;
 use App\Http\Resources\Chat\MessageResource;
 use App\Http\Resources\Chat\ConversationResource;
 use App\Http\Requests\Chat\StoreConversationRequest;
+use App\Events\MessageSent;
+use App\Models\Message;
+use App\Models\User;
 
 class ChatController extends ApiController
 {
@@ -71,6 +74,7 @@ class ChatController extends ApiController
             __('messages.created_successfully'),
             201
         );
+        
     }
 
     public function markAsRead(Request $request, Conversation $conversation): JsonResponse
@@ -85,4 +89,5 @@ class ChatController extends ApiController
             __('messages.updated_successfully')
         );
     }
+    
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Events\MessageSent;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\Message;
@@ -143,27 +144,47 @@ class ChatController extends Controller
         ]);
     }
 
-    public function storeMessage(StoreMessageRequest $request, Conversation $conversation): RedirectResponse
-    {
-        $authUser = $request->user();
+   public function storeMessage(StoreMessageRequest $request, Conversation $conversation)
+{
+$data = [
+'conversation_id' => $conversation->id,
+'sender_id' => auth()->id(),
+'body' => $request->body,
+];
 
-        abort_unless(
-            $conversation->user_one_id === $authUser->id || $conversation->user_two_id === $authUser->id,
-            403
-        );
 
-        $message = Message::query()->create([
-            'conversation_id' => $conversation->id,
-            'sender_id' => $authUser->id,
-            'body' => $request->validated()['body'],
-        ]);
+if ($request->hasFile('attachment')) {
 
-        $conversation->update([
-            'last_message_id' => $message->id,
-        ]);
+    $file = $request->file('attachment');
 
-        return redirect()->route('chat.index', [
-            'conversation' => $conversation->id,
-        ]);
-    }
+    $path = $file->store('chat_attachments', 'public');
+
+    $data['file_path'] = $path;
+
+    $data['file_name'] = $file->getClientOriginalName();
+
+    $data['type'] = $file->getClientMimeType();
+}
+
+$message = Message::create($data);
+
+$conversation->update([
+    'last_message_id' => $message->id,
+]);
+
+
+broadcast(new MessageSent($message->load('sender')))->toOthers();
+
+if ($request->ajax()) {
+
+    return response()->json([
+        'success' => true,
+        'message' => $message,
+    ]);
+}
+
+
+return back();
+
+}
 }

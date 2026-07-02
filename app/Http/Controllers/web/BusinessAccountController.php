@@ -22,6 +22,7 @@ class BusinessAccountController extends Controller
 
     public function index(Request $request): View
     {
+        
         $businessAccounts = BusinessAccount::query()
             ->with([
                 'city',
@@ -55,7 +56,7 @@ class BusinessAccountController extends Controller
 
         $showCreateForm = (bool) $request->boolean('new');
         $showEditForm = (bool) $request->boolean('edit') && $selectedBusinessAccount;
-
+        
         return view('public.business-account.index', compact(
             'businessAccounts',
             'latestBusinessAccount',

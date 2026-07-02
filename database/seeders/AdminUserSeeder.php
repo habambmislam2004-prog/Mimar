@@ -18,7 +18,7 @@ class AdminUserSeeder extends Seeder
         if (! $admin) {
             $admin = User::query()->create([
                 'name' => 'Super Admin',
-                'email' => 'admin@realestate.com',
+                'email' => 'admin@real.com',
                 'phone' => '09999999999',
                 'password' => bcrypt('12345678'),
                 'locale' => 'ar',

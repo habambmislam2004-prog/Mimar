@@ -24,6 +24,12 @@ class AuthController extends ApiController
     ) {
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Register
+    |--------------------------------------------------------------------------
+    */
+
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -45,9 +51,17 @@ class AuthController extends ApiController
         ], __('messages.registered_successfully'), 201);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Send OTP
+    |--------------------------------------------------------------------------
+    */
+
     public function sendOtp(SendOtpRequest $request): JsonResponse
     {
-        $normalizedPhone = $this->normalizePhone($request->validated()['phone']);
+        $normalizedPhone = $this->normalizePhone(
+            $request->validated()['phone']
+        );
 
         $user = User::query()
             ->get()
@@ -67,18 +81,36 @@ class AuthController extends ApiController
             ]);
         }
 
-        $code = (string) random_int(100000, 999999);
+        /*
+        |--------------------------------------------------------------------------
+        | Delete old OTPs
+        |--------------------------------------------------------------------------
+        */
 
         UserOtp::query()
             ->where('user_id', $user->id)
             ->whereNull('used_at')
             ->delete();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Generate new OTP
+        |--------------------------------------------------------------------------
+        */
+
+        $code = (string) random_int(100000, 999999);
+
         UserOtp::query()->create([
             'user_id' => $user->id,
             'code' => $code,
             'expires_at' => now()->addMinutes(5),
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Send WhatsApp OTP
+        |--------------------------------------------------------------------------
+        */
 
         $this->whatsAppOtpService->send($user->phone, $code);
 
@@ -88,11 +120,19 @@ class AuthController extends ApiController
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Verify OTP
+    |--------------------------------------------------------------------------
+    */
+
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
-        $request->all();
         $validated = $request->validated();
-        $normalizedPhone = $this->normalizePhone($validated['phone']);
+
+        $normalizedPhone = $this->normalizePhone(
+            $validated['phone']
+        );
 
         $user = User::query()
             ->get()
@@ -112,27 +152,55 @@ class AuthController extends ApiController
             ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Check OTP
+        |--------------------------------------------------------------------------
+        */
+
         $otp = UserOtp::query()
             ->where('user_id', $user->id)
             ->where('code', $validated['code'])
+            ->whereNull('used_at')
+            ->where('expires_at', '>=', now())
             ->latest()
             ->first();
 
-        if (! $otp || ! $otp->isValid()) {
+        if (! $otp) {
             throw ValidationException::withMessages([
                 'code' => __('messages.otp_invalid_or_expired'),
             ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Mark OTP as used
+        |--------------------------------------------------------------------------
+        */
+
         $otp->update([
             'used_at' => now(),
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update login time
+        |--------------------------------------------------------------------------
+        */
 
         $user->update([
             'last_login_at' => now(),
         ]);
 
-        $token = $user->createToken('user-api-token')->plainTextToken;
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Sanctum Token
+        |--------------------------------------------------------------------------
+        */
+
+        $token = $user->createToken(
+            'user-api-token'
+        )->plainTextToken;
 
         return $this->successResponse([
             'user' => new UserResource($user),
@@ -140,8 +208,13 @@ class AuthController extends ApiController
         ], __('messages.logged_in_successfully'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | User Login
+    |--------------------------------------------------------------------------
+    */
 
-     public function userLogin(Request $request): JsonResponse
+    public function userLogin(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'nullable|email',
@@ -149,52 +222,102 @@ class AuthController extends ApiController
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('email', 'phone', 'password');
+        $credentials = $request->only(
+            'email',
+            'phone',
+            'password'
+        );
 
-        $user = User::where('email', $credentials['email'] ?? null)
-                      ->orWhere('phone', $credentials['phone'] ?? null)
-                      ->first();
+        $user = User::query()
+            ->where('email', $credentials['email'] ?? null)
+            ->orWhere('phone', $credentials['phone'] ?? null)
+            ->first();
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'identifier' => [__('messages.invalid_credentials')],
+                'identifier' => [
+                    __('messages.invalid_credentials')
+                ],
             ]);
         }
 
-        // التحقق من أن المستخدم لديه دور USER
+        /*
+        |--------------------------------------------------------------------------
+        | USER role only
+        |--------------------------------------------------------------------------
+        */
+
         if (! $user->hasRole(SystemRole::USER->value)) {
             throw ValidationException::withMessages([
-                'identifier' => [__('messages.user_login_only')],
+                'identifier' => [
+                    __('messages.user_login_only')
+                ],
             ]);
         }
 
-        // التحقق من أن الحساب نشط
+        /*
+        |--------------------------------------------------------------------------
+        | Check active
+        |--------------------------------------------------------------------------
+        */
+
         if (! $user->is_active) {
             throw ValidationException::withMessages([
-                'identifier' => [__('messages.account_inactive')],
+                'identifier' => [
+                    __('messages.account_inactive')
+                ],
             ]);
         }
 
-        // التحقق من كلمة المرور
-        if (! Hash::check($credentials['password'], $user->password)) {
+        /*
+        |--------------------------------------------------------------------------
+        | Check password
+        |--------------------------------------------------------------------------
+        */
+
+        if (! Hash::check(
+            $credentials['password'],
+            $user->password
+        )) {
             throw ValidationException::withMessages([
-                'identifier' => [__('messages.invalid_credentials')],
+                'identifier' => [
+                    __('messages.invalid_credentials')
+                ],
             ]);
         }
 
-        // تحديث آخر وقت لتسجيل الدخول
-        $user->update(['last_login_at' => now()]);
+        /*
+        |--------------------------------------------------------------------------
+        | Update login time
+        |--------------------------------------------------------------------------
+        */
 
-        // إنشاء توكن جديد للمستخدم
-        $token = $user->createToken('user-api-token')->plainTextToken;
+        $user->update([
+            'last_login_at' => now(),
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate token
+        |--------------------------------------------------------------------------
+        */
+
+        $token = $user->createToken(
+            'user-api-token'
+        )->plainTextToken;
 
         return $this->successResponse([
-            new UserResource($user),
+            'user' => new UserResource($user),
             'token' => $token,
-         ], __('messages.logged_in_successfully'),
-            200
-        );
+        ], __('messages.logged_in_successfully'), 200);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Login
+    |--------------------------------------------------------------------------
+    */
+
     public function adminLogin(AdminLoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
@@ -224,7 +347,10 @@ class AuthController extends ApiController
             ]);
         }
 
-        if (! Hash::check($credentials['password'], $user->password)) {
+        if (! Hash::check(
+            $credentials['password'],
+            $user->password
+        )) {
             throw ValidationException::withMessages([
                 'email' => __('messages.invalid_credentials'),
             ]);
@@ -234,7 +360,9 @@ class AuthController extends ApiController
             'last_login_at' => now(),
         ]);
 
-        $token = $user->createToken('admin-api-token')->plainTextToken;
+        $token = $user->createToken(
+            'admin-api-token'
+        )->plainTextToken;
 
         return $this->successResponse([
             'user' => new UserResource($user),
@@ -242,9 +370,17 @@ class AuthController extends ApiController
         ], __('messages.logged_in_successfully'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+
     public function logout(Request $request): JsonResponse
     {
-        $request->user()?->currentAccessToken()?->delete();
+        $request->user()
+            ?->currentAccessToken()
+            ?->delete();
 
         return $this->successResponse(
             null,
@@ -252,28 +388,39 @@ class AuthController extends ApiController
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Me
+    |--------------------------------------------------------------------------
+    */
+
     public function me(Request $request): JsonResponse
     {
-        return $this->successResponse(
-            new UserResource($request->user()),
-            __('messages.profile_fetched_successfully')
-        );
+        return $this->successResponse([
+            'user' => new UserResource($request->user()),
+        ], __('messages.profile_fetched_successfully'));
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalize Phone
+    |--------------------------------------------------------------------------
+    */
 
     private function normalizePhone(?string $phone): string
-    {
-        $phone = trim((string) $phone);
-        $phone = preg_replace('/\s+/', '', $phone);
-        $phone = str_replace(['-', '(', ')'], '', $phone);
+{
+    $phone = trim((string) $phone);
 
-        if (str_starts_with($phone, '+963')) {
-            $phone = '0' . substr($phone, 4);
-        } elseif (str_starts_with($phone, '963')) {
-            $phone = '0' . substr($phone, 3);
-        } elseif (str_starts_with($phone, '00963')) {
-            $phone = '0' . substr($phone, 5);
-        }
+    $phone = preg_replace('/\D+/', '', $phone);
 
-        return $phone;
+    if (str_starts_with($phone, '0')) {
+        $phone = '963' . substr($phone, 1);
     }
+
+    if (str_starts_with($phone, '+')) {
+        $phone = substr($phone, 1);
+    }
+
+    return $phone;
+}
 }
